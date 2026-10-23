@@ -10,12 +10,16 @@ type UiState = {
   selectedIds: string[];
   dragPreview: DragPreview | null;
   marquee: Box | null;
+  draggingSlideId: string | null;
+  renamingSlideId: string | null;
   goToSlide: (id: string) => void;
   setSelection: (ids: string[]) => void;
   toggleSelected: (id: string) => void;
   clearSelection: () => void;
   setDragPreview: (preview: DragPreview | null) => void;
   setMarquee: (box: Box | null) => void;
+  setDraggingSlideId: (id: string | null) => void;
+  setRenamingSlideId: (id: string | null) => void;
 };
 
 export const useUiStore = create<UiState>()((set) => ({
@@ -23,6 +27,8 @@ export const useUiStore = create<UiState>()((set) => ({
   selectedIds: [],
   dragPreview: null,
   marquee: null,
+  draggingSlideId: null,
+  renamingSlideId: null,
   goToSlide: (id) => set((s) => (s.currentSlideId === id ? s : { currentSlideId: id, selectedIds: [] })),
   setSelection: (ids) => set({ selectedIds: ids }),
   toggleSelected: (id) =>
@@ -32,6 +38,8 @@ export const useUiStore = create<UiState>()((set) => ({
   clearSelection: () => set((s) => (s.selectedIds.length === 0 ? s : { selectedIds: [] })),
   setDragPreview: (preview) => set({ dragPreview: preview }),
   setMarquee: (box) => set({ marquee: box }),
+  setDraggingSlideId: (id) => set({ draggingSlideId: id }),
+  setRenamingSlideId: (id) => set({ renamingSlideId: id }),
 }));
 
 export function selectionOnSlide(deck: Deck, slideId: string, ids: string[]): string[] {
@@ -52,6 +60,16 @@ export function goRelative(delta: 1 | -1): void {
   const next = deck.slideOrder[Math.min(Math.max(index + delta, 0), deck.slideOrder.length - 1)];
   if (next) goToSlide(next);
 }
+
+useDeckStore.subscribe((state, prev) => {
+  if (state.deck.slideOrder === prev.deck.slideOrder) return;
+  const { currentSlideId } = useUiStore.getState();
+  if (!currentSlideId || state.deck.slides[currentSlideId]) return;
+  const order = state.deck.slideOrder;
+  const was = prev.deck.slideOrder.indexOf(currentSlideId);
+  const next = order[Math.min(Math.max(was, 0), order.length - 1)] ?? null;
+  useUiStore.setState({ currentSlideId: next, selectedIds: [], renamingSlideId: null });
+});
 
 declare global {
   interface Window {
