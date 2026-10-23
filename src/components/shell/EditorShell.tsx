@@ -8,6 +8,7 @@ import { addBlankSlide } from "@/lib/slides/actions";
 import { useCurrentSlideId } from "@/lib/ui/useCurrentSlideId";
 import { SelectionToolbar } from "./SelectionToolbar";
 import { useEditorShortcuts } from "./useEditorShortcuts";
+import "@/lib/agent/devtools";
 
 export function EditorShell() {
   useEditorShortcuts();
