@@ -1,6 +1,8 @@
 import { useDeckStore } from "@/lib/deck/store";
 import { resolveCurrentSlideId, useUiStore } from "@/lib/ui/store";
 import { executeToolCall } from "./executeTool";
+import { revealAiChanges } from "./reveal";
+import { runAgent, stopAgent } from "./runAgent";
 import { serializeForAI } from "./snapshot";
 import { toOpenAiTools } from "./tools";
 
@@ -11,10 +13,12 @@ function snapshot(): string {
 
 function run(name: string, args: unknown) {
   const call = { id: "console", type: "function" as const, function: { name, arguments: JSON.stringify(args) } };
-  return executeToolCall(call, { txnId: crypto.randomUUID(), label: `Tool: ${name}` });
+  const execution = executeToolCall(call, { txnId: crypto.randomUUID(), label: `Tool: ${name}` });
+  if (execution.ok) revealAiChanges(execution.touched);
+  return execution;
 }
 
-const agentDevtools = { snapshot, run, definitions: () => toOpenAiTools() };
+const agentDevtools = { snapshot, run, ask: runAgent, stop: stopAgent, definitions: () => toOpenAiTools() };
 
 declare global {
   interface Window {

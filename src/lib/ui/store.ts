@@ -12,6 +12,7 @@ type UiState = {
   marquee: Box | null;
   draggingSlideId: string | null;
   renamingSlideId: string | null;
+  aiHighlights: Record<string, number>;
   goToSlide: (id: string) => void;
   setSelection: (ids: string[]) => void;
   toggleSelected: (id: string) => void;
@@ -20,7 +21,11 @@ type UiState = {
   setMarquee: (box: Box | null) => void;
   setDraggingSlideId: (id: string | null) => void;
   setRenamingSlideId: (id: string | null) => void;
+  flashAiHighlights: (ids: string[]) => void;
 };
+
+export const AI_HIGHLIGHT_MS = 1500;
+let highlightSeq = 0;
 
 export const useUiStore = create<UiState>()((set) => ({
   currentSlideId: null,
@@ -29,6 +34,7 @@ export const useUiStore = create<UiState>()((set) => ({
   marquee: null,
   draggingSlideId: null,
   renamingSlideId: null,
+  aiHighlights: {},
   goToSlide: (id) => set((s) => (s.currentSlideId === id ? s : { currentSlideId: id, selectedIds: [] })),
   setSelection: (ids) => set({ selectedIds: ids }),
   toggleSelected: (id) =>
@@ -40,6 +46,14 @@ export const useUiStore = create<UiState>()((set) => ({
   setMarquee: (box) => set({ marquee: box }),
   setDraggingSlideId: (id) => set({ draggingSlideId: id }),
   setRenamingSlideId: (id) => set({ renamingSlideId: id }),
+  flashAiHighlights(ids) {
+    if (ids.length === 0) return;
+    const seq = ++highlightSeq;
+    set((s) => ({ aiHighlights: { ...s.aiHighlights, ...Object.fromEntries(ids.map((id) => [id, seq])) } }));
+    setTimeout(() => {
+      set((s) => ({ aiHighlights: Object.fromEntries(Object.entries(s.aiHighlights).filter(([, v]) => v !== seq)) }));
+    }, AI_HIGHLIGHT_MS);
+  },
 }));
 
 export function selectionOnSlide(deck: Deck, slideId: string, ids: string[]): string[] {

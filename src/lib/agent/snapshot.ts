@@ -8,7 +8,10 @@ export function clip(text: string, max: number): string {
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }
 
-export function serializeForAI(deck: Deck, currentSlideId: string | null): string {
+export type TurnMarks = Map<string, "added" | "edited">;
+
+export function serializeForAI(deck: Deck, currentSlideId: string | null, marks?: TurnMarks): string {
+  const mark = (id: string) => (marks?.has(id) ? ` (${marks.get(id)} by you this reply)` : "");
   const lines = [
     `Deck "${deck.title}", ${deck.slideOrder.length} slides, artboard 1600x900, current slide: ${currentSlideId ?? "none"}`,
   ];
@@ -16,16 +19,18 @@ export function serializeForAI(deck: Deck, currentSlideId: string | null): strin
     const slide = deck.slides[slideId];
     if (!slide) return;
     const notes = slide.notes ? ` notes=${JSON.stringify(clip(slide.notes, NOTES_LIMIT))}` : "";
-    lines.push(`[${index + 1}] ${slide.id} ${JSON.stringify(slide.title)} layout=${slide.layout} bg=${slide.background.color}${notes}`);
+    lines.push(
+      `[${index + 1}] ${slide.id} ${JSON.stringify(slide.title)} layout=${slide.layout} bg=${slide.background.color}${notes}${mark(slide.id)}`,
+    );
     for (const id of slide.elementOrder) {
       const element = deck.elements[id];
-      if (element) lines.push(`  ${describeElement(element)}`);
+      if (element) lines.push(`  ${describeElement(element)}${mark(id)}`);
     }
   });
   return lines.join("\n");
 }
 
-function describeElement(element: Element): string {
+export function describeElement(element: Element): string {
   const { x, y, w, h } = element.box;
   const at = `@${x},${y} ${w}x${h}`;
   switch (element.type) {
