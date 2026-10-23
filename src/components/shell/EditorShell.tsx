@@ -2,7 +2,9 @@
 
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { Filmstrip } from "@/components/filmstrip/Filmstrip";
+import { FilmstripToolbar } from "@/components/filmstrip/FilmstripToolbar";
 import { useDeckStore } from "@/lib/deck/store";
+import { addBlankSlide } from "@/lib/slides/actions";
 import { useCurrentSlideId } from "@/lib/ui/useCurrentSlideId";
 import { SelectionToolbar } from "./SelectionToolbar";
 import { useEditorShortcuts } from "./useEditorShortcuts";
@@ -21,7 +23,7 @@ export function EditorShell() {
 
       <div className="flex min-h-0 flex-1">
         <aside className="flex w-[216px] shrink-0 flex-col gap-3 overflow-y-auto border-r border-chrome-border bg-white p-3">
-          <h2 className="text-xs font-medium tracking-wide text-zinc-500 uppercase">Slides</h2>
+          <FilmstripToolbar />
           <Filmstrip />
         </aside>
 
@@ -47,8 +49,15 @@ function CanvasArea() {
 
   if (!slideId) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-zinc-400">
-        This deck has no slides yet.
+      <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-zinc-400">
+        <p>This deck has no slides yet.</p>
+        <button
+          type="button"
+          onClick={() => addBlankSlide("end")}
+          className="rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+        >
+          Add blank slide
+        </button>
       </div>
     );
   }

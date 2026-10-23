@@ -11,6 +11,7 @@ import {
   type ZDirection,
 } from "@/lib/canvas/actions";
 import { useDeckStore } from "@/lib/deck/store";
+import { deleteCurrentSlide, duplicateCurrentSlide, isFilmstripFocused } from "@/lib/slides/actions";
 import { goRelative, useUiStore } from "@/lib/ui/store";
 
 const NUDGE_SMALL = 1;
@@ -37,6 +38,7 @@ export function useEditorShortcuts(): void {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (isEditableTarget(event.target)) return;
+      if (useUiStore.getState().draggingSlideId) return;
       const mod = event.metaKey || event.ctrlKey;
       const key = event.key.toLowerCase();
       const { undo, redo } = useDeckStore.getState();
@@ -54,7 +56,8 @@ export function useEditorShortcuts(): void {
       }
       if (mod && key === "d") {
         event.preventDefault();
-        duplicateSelection();
+        if (hasSelection()) duplicateSelection();
+        else if (isFilmstripFocused()) duplicateCurrentSlide();
         return;
       }
       if (mod && key === "a") {
@@ -76,7 +79,8 @@ export function useEditorShortcuts(): void {
       }
       if (event.key === "Delete" || event.key === "Backspace") {
         event.preventDefault();
-        deleteSelection();
+        if (hasSelection()) deleteSelection();
+        else if (isFilmstripFocused()) deleteCurrentSlide();
         return;
       }
       const vector = ARROW_VECTORS[event.key];
