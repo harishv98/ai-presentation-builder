@@ -4,6 +4,7 @@
   "ignorePatterns": [".next/**", "next-env.d.ts"],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/exhaustive-deps": "warn"
+    "react/exhaustive-deps": "warn",
+    "nextjs/no-img-element": "off"
   }
 }

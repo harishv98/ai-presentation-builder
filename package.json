@@ -12,9 +12,13 @@
     "spike": "node --use-system-ca scripts/sarvam-spike.mjs"
   },
   "dependencies": {
+    "immer": "^11.2.9",
     "next": "^16.4.2",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "recharts": "^3.10.1",
+    "zod": "^4.6.7",
+    "zustand": "^5.0.16"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
