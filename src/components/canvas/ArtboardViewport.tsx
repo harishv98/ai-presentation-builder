@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { ARTBOARD_HEIGHT, ARTBOARD_WIDTH } from "@/lib/deck/constants";
+import { ScaledArtboard } from "@/components/slide/ScaledArtboard";
 
 const VIEWPORT_PADDING = 48;
 
@@ -29,13 +30,8 @@ export function ArtboardViewport({ children }: { children?: ReactNode }) {
   return (
     <div ref={containerRef} className="relative flex h-full w-full items-center justify-center overflow-hidden">
       {scale > 0 && (
-        <div style={{ width: ARTBOARD_WIDTH * scale, height: ARTBOARD_HEIGHT * scale }}>
-          <div
-            className="relative origin-top-left bg-white shadow-lg ring-1 ring-black/5"
-            style={{ width: ARTBOARD_WIDTH, height: ARTBOARD_HEIGHT, transform: `scale(${scale})` }}
-          >
-            {children}
-          </div>
+        <div className="shadow-lg ring-1 ring-black/5">
+          <ScaledArtboard scale={scale}>{children}</ScaledArtboard>
         </div>
       )}
       <div className="absolute right-3 bottom-2 text-xs text-zinc-400 tabular-nums">
