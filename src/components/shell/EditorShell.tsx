@@ -4,6 +4,7 @@ import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { Filmstrip } from "@/components/filmstrip/Filmstrip";
 import { useDeckStore } from "@/lib/deck/store";
 import { useCurrentSlideId } from "@/lib/ui/useCurrentSlideId";
+import { SelectionToolbar } from "./SelectionToolbar";
 import { useEditorShortcuts } from "./useEditorShortcuts";
 
 export function EditorShell() {
@@ -14,6 +15,7 @@ export function EditorShell() {
     <div className="flex h-screen flex-col">
       <header className="flex h-12 shrink-0 items-center justify-between border-b border-chrome-border bg-white px-4">
         <span className="truncate text-sm font-semibold">{deckTitle}</span>
+        <SelectionToolbar />
         <HistoryButtons />
       </header>
 

@@ -1,8 +1,32 @@
 "use client";
 
 import { useEffect } from "react";
+import {
+  deleteSelection,
+  duplicateSelection,
+  hasSelection,
+  nudgeSelection,
+  reorderSelection,
+  selectAllOnSlide,
+  type ZDirection,
+} from "@/lib/canvas/actions";
 import { useDeckStore } from "@/lib/deck/store";
-import { goRelative } from "@/lib/ui/store";
+import { goRelative, useUiStore } from "@/lib/ui/store";
+
+const NUDGE_SMALL = 1;
+const NUDGE_LARGE = 20;
+
+const ARROW_VECTORS: Record<string, [number, number]> = {
+  ArrowLeft: [-1, 0],
+  ArrowRight: [1, 0],
+  ArrowUp: [0, -1],
+  ArrowDown: [0, 1],
+};
+
+const Z_SHORTCUTS: Record<string, [ZDirection, ZDirection]> = {
+  BracketRight: ["forward", "front"],
+  BracketLeft: ["backward", "back"],
+};
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -28,7 +52,40 @@ export function useEditorShortcuts(): void {
         redo();
         return;
       }
+      if (mod && key === "d") {
+        event.preventDefault();
+        duplicateSelection();
+        return;
+      }
+      if (mod && key === "a") {
+        event.preventDefault();
+        selectAllOnSlide();
+        return;
+      }
+      const z = Z_SHORTCUTS[event.code];
+      if (mod && z) {
+        event.preventDefault();
+        reorderSelection(event.shiftKey ? z[1] : z[0]);
+        return;
+      }
       if (mod || event.altKey) return;
+
+      if (event.key === "Escape") {
+        useUiStore.getState().clearSelection();
+        return;
+      }
+      if (event.key === "Delete" || event.key === "Backspace") {
+        event.preventDefault();
+        deleteSelection();
+        return;
+      }
+      const vector = ARROW_VECTORS[event.key];
+      if (vector && hasSelection()) {
+        event.preventDefault();
+        const step = event.shiftKey ? NUDGE_LARGE : NUDGE_SMALL;
+        nudgeSelection(vector[0] * step, vector[1] * step);
+        return;
+      }
 
       switch (event.key) {
         case "ArrowDown":
