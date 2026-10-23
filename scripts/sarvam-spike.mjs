@@ -47,11 +47,20 @@ const body = {
 };
 
 const started = performance.now();
-const res = await fetch("https://api.sarvam.ai/v2/chat/completions", {
-  method: "POST",
-  headers: { "content-type": "application/json", "api-subscription-key": apiKey },
-  body: JSON.stringify(body),
-});
+let res;
+try {
+  res = await fetch("https://api.sarvam.ai/v2/chat/completions", {
+    method: "POST",
+    headers: { "content-type": "application/json", "api-subscription-key": apiKey },
+    body: JSON.stringify(body),
+  });
+} catch (error) {
+  console.error(`Request failed: ${error.cause?.code ?? error.message}`);
+  if (error.cause?.code === "UNABLE_TO_GET_ISSUER_CERT_LOCALLY") {
+    console.error("A TLS-inspecting proxy (e.g. Zscaler) is in the way. Run with `node --use-system-ca` or set NODE_USE_SYSTEM_CA=1.");
+  }
+  process.exit(1);
+}
 
 if (!res.ok || !res.body) {
   console.error(`HTTP ${res.status}: ${await res.text()}`);

@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "oxlint",
     "typecheck": "tsc --noEmit",
-    "spike": "node scripts/sarvam-spike.mjs"
+    "spike": "node --use-system-ca scripts/sarvam-spike.mjs"
   },
   "dependencies": {
     "next": "^16.4.2",
