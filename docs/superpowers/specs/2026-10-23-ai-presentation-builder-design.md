@@ -94,7 +94,7 @@ Rules:
 ### 5.1 Proxy route — `app/api/chat/route.ts`
 - Input: `{ mode: 'plan' | 'populate' | 'edit', messages, deckSnapshot, slideId? }`.
 - Server attaches system prompt for the mode, tool definitions (from zod), model id, `reasoning_effort: "low"` (reasoning models only), capped `max_tokens`, `stream: true`.
-- Guards: per-IP rate limit (20/min, 300/day, in-memory per instance), 200 KB body limit, mode-allowed tool subset.
+- Guards: per-IP rate limit (40/min, 400/day, in-memory per instance, counted before parsing; one agent reply makes 2–4 requests), 200 KB body limit, zod-validated body with no `system` role, mode-allowed tool subset.
 - Key: `SARVAM_API_KEY` from `process.env` only. `.env.local` git-ignored; `.env.example` committed.
 - Streams Sarvam SSE through to the client unchanged.
 
@@ -111,19 +111,20 @@ Rules:
 - **Populate:** one request per slide (`mode: 'populate'`, tools restricted to element/chart/table tools on that slide). Concurrency 2. Slides fill progressively.
 
 ### 5.4 Edit mode
-- Full slide/element/chart/table tool set. System prompt: never recreate existing content; reference ids; preserve boxes of elements not mentioned.
+- Full slide/element/chart/table tool set. System prompt: never recreate existing content; reference ids; preserve boxes of elements not mentioned; delete only when asked; fill a slide in the same reply that adds it; make each change once.
+- Loop safeguards (sarvam-105b otherwise re-applies the same edit until the step cap): tool results carry `applied` and `previously` (the element before the edit); the snapshot marks elements and slides `(added by you this reply)` / `(edited by you this reply)`; a call identical to one that already succeeded is skipped, and a step of only repeats ends the reply. A reply that ends with no text shows a notice instead.
 
 ### 5.5 Tools
 - Slides: `add_slide`, `update_slide`, `delete_slide`, `reorder_slides`, `duplicate_slide`, `change_layout`
 - Elements: `add_element`, `update_element`, `delete_element`, `move_element`, `resize_element`, `reorder_elements`
 - Charts: `add_chart`, `update_chart_data`, `change_chart_type`
-- Tables: `add_table`, `update_table`
+- Tables: `add_table`, `update_table` (whole `rows` or individual `cells`)
 - Chart/table/resize tools compile down to core ops.
-- `box` is optional on adds; a deterministic layout helper places the element into a free slot for the slide's layout (title zone, body, left/right column).
+- `box` is optional on adds; a deterministic layout helper (`lib/agent/placement.ts`, built in stage 4) places the element into the least-occupied slot: title band, full body, left/right half, or bottom strip.
 - AI images: `https://picsum.photos/seed/<keyword>/800/600` with descriptive alt text.
 
 ### 5.6 Dev replay
-- `NEXT_PUBLIC_AGENT_REPLAY=1` replays recorded SSE fixtures instead of calling the proxy, so UI work spends no credits.
+- Server-side, in the proxy route. `AGENT_RECORD=1` tees each upstream stream into `fixtures/agent/<prompt-slug>.step<N>.sse` (reasoning-only events dropped). `AGENT_REPLAY=1` serves the matching fixture, one event per 30 ms, without calling Sarvam or needing a key; an unknown prompt gets a "No recording named …" reply. Neither runs in production.
 
 ## 6. Canvas & drag-and-drop
 

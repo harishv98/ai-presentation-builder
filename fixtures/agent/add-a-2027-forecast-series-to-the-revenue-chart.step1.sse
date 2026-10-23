@@ -1,0 +1,36 @@
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":"","role":"assistant"},"finish_reason":null,"index":0,"logprobs":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk","prompt_token_ids":null,"prompt_text":null}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":"\nAdded"},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":" the"},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":" "},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":"2"},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":"0"},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":"2"},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":"7"},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":" forecast"},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":" series"},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":" to"},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":" the"},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":" revenue"},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":" chart"},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{"content":"."},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[{"delta":{},"finish_reason":"stop","index":0,"logprobs":null,"stop_reason":null,"token_ids":null}],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261023_fdcd4e62-ccfd-4b0d-b76e-acf6f73812c6","choices":[],"created":1792773196,"model":"sarvam-105b","object":"chat.completion.chunk","system_fingerprint":"vllm-0.29.1rc1.dev145+gfe61f3317-tp2-1c00f7c7","usage":{"completion_tokens":68,"prompt_tokens":5273,"total_tokens":5341,"completion_tokens_details":{"reasoning_tokens":50}}}
+
+data: [DONE]
+

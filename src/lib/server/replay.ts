@@ -39,10 +39,33 @@ export function recordStream(body: ReadableStream<Uint8Array>, name: string): Re
     .text()
     .then(async (text) => {
       await mkdir(FIXTURE_DIR, { recursive: true });
-      await writeFile(path.join(FIXTURE_DIR, name), text);
+      await writeFile(path.join(FIXTURE_DIR, name), dropReasoningEvents(text));
     })
     .catch((error: unknown) => console.warn(`[replay] could not record ${name}`, error));
   return toClient;
+}
+
+// The client ignores reasoning deltas; keeping them makes replay drip for tens of seconds.
+export function dropReasoningEvents(text: string): string {
+  return text
+    .split(/\r?\n\r?\n/)
+    .filter((event) => event.trim() && !isReasoningOnly(event))
+    .map((event) => `${event}\n\n`)
+    .join("");
+}
+
+function isReasoningOnly(event: string): boolean {
+  const payload = event.replace(/^data:\s*/, "");
+  if (payload === "[DONE]") return false;
+  try {
+    const chunk = JSON.parse(payload) as { usage?: unknown; choices?: { delta?: Record<string, unknown>; finish_reason?: unknown }[] };
+    if (chunk.usage || chunk.choices?.length !== 1) return false;
+    const [choice] = chunk.choices;
+    const keys = Object.keys(choice?.delta ?? {}).filter((key) => key !== "role");
+    return !choice?.finish_reason && keys.length > 0 && keys.every((key) => key === "reasoning" || key === "reasoning_content");
+  } catch {
+    return false;
+  }
 }
 
 function drip(text: string): ReadableStream<Uint8Array> {
