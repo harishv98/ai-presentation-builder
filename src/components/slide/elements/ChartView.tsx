@@ -30,7 +30,7 @@ export function ChartView({ element, variant }: { element: ElementOf<"chart">; v
   const common = { id: `${element.id}-${variant}`, width, height, accessibilityLayer: false };
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="pointer-events-none flex h-full w-full flex-col">
       <div className="truncate text-center text-[24px] font-semibold text-slate-800" style={{ height: TITLE_HEIGHT }}>
         {chart.title}
       </div>
