@@ -12,7 +12,7 @@ A web-based AI presentation builder: prompt → AI plans and populates a 16:9 de
 | # | Decision | Chosen | Why |
 |---|----------|--------|-----|
 | D1 | Framework | Next.js (App Router) + TypeScript, deployed on Vercel | Spec prefers Next.js; API route keeps the key server-side; TS because the schema is the backbone |
-| D2 | LLM provider | Sarvam only (`POST https://api.sarvam.ai/v2/chat/completions`, OpenAI-compatible, `tools` + `stream`) | User choice. Start with `sarvam-105b`; spike against `deepseekv4.1-flash` before locking |
+| D2 | LLM provider | Sarvam only (`POST https://api.sarvam.ai/v2/chat/completions`, OpenAI-compatible, `tools` + `stream`) | User choice. Model locked to `sarvam-105b` after the stage 0 spike: 428 ms to first chunk vs 1193 ms, 211 vs 431 tokens, and tool arguments stream incrementally (deepseekv4.1-flash sends each call in one chunk). Note: it may return several tool calls per turn; `parallel_tool_calls: false` is not enforced |
 | D3 | Credit budget | No fallback provider; conserve credits instead | User choice. Savers: `reasoning_effort: "low"`, compact snapshot + last 6 messages, capped `max_tokens`, dev replay mode |
 | D4 | Agent loop location | Client-side loop; `/api/chat` is a thin proxy | One canonical deck; tools always hit live state; mid-turn drags just work; unified undo trivial; no serverless timeout risk |
 | D5 | Proxy guards | Per-IP rate limit (in-memory to start), server owns system prompt/tools/model, body size limit (200 KB), agent step cap (12) | Public endpoint spends a fixed, Sarvam-only credit budget |
@@ -25,6 +25,7 @@ A web-based AI presentation builder: prompt → AI plans and populates a 16:9 de
 | D12 | Nice-to-haves in scope | Persistence (localStorage/IndexedDB), AI-touched element highlight, keyboard nudging | User choice. Others (themes beyond default, present mode, lock, PPTX) out unless time remains |
 | D13 | Text model | Paragraph/bullet arrays with per-element style, `contentEditable` on double-click | Keeps editor and AI edits simple; no rich-text library |
 | D14 | Workflow | Work locally; unit tests and deployment deferred to stage 9 | User choice. Each stage until then is verified by the user's manual checklist |
+| D15 | Local TLS | Node runs with the system CA store (`--use-system-ca` on the spike script; `NODE_USE_SYSTEM_CA=1` in the shell for `next dev`) | Zscaler intercepts HTTPS on the dev machine; Node's bundled CA list rejects it. Harmless elsewhere |
 
 ## 3. Schema
 
