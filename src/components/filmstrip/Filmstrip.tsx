@@ -1,72 +1,98 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { ScaledArtboard } from "@/components/slide/ScaledArtboard";
-import { SlideRenderer } from "@/components/slide/SlideRenderer";
-import { ARTBOARD_WIDTH } from "@/lib/deck/constants";
+import {
+  closestCenter,
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useState } from "react";
 import { useDeckStore } from "@/lib/deck/store";
+import { addBlankSlide, moveSlide } from "@/lib/slides/actions";
 import { useUiStore } from "@/lib/ui/store";
 import { useCurrentSlideId } from "@/lib/ui/useCurrentSlideId";
+import { SlideThumbnail, ThumbnailArt } from "./SlideThumbnail";
 
-const THUMBNAIL_WIDTH = 168;
+const DRAG_ACTIVATION_PX = 5;
+
+const screenReaderInstructions = {
+  draggable: "Drag a slide thumbnail with the pointer to reorder slides.",
+};
 
 export function Filmstrip() {
   const slideOrder = useDeckStore((s) => s.deck.slideOrder);
   const currentSlideId = useCurrentSlideId();
+  const draggingSlideId = useUiStore((s) => s.draggingSlideId);
+  const setDraggingSlideId = useUiStore((s) => s.setDraggingSlideId);
+  const [overIndex, setOverIndex] = useState(0);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: DRAG_ACTIVATION_PX } }));
 
-  if (slideOrder.length === 0) {
-    return (
-      <div className="flex aspect-video items-center justify-center rounded border border-dashed border-zinc-300 text-xs text-zinc-400">
-        No slides yet
-      </div>
-    );
+  function onDragStart({ active }: DragStartEvent) {
+    setDraggingSlideId(String(active.id));
+    setOverIndex(slideOrder.indexOf(String(active.id)));
+  }
+
+  function onDragOver({ over }: DragOverEvent) {
+    if (over) setOverIndex(slideOrder.indexOf(String(over.id)));
+  }
+
+  function onDragEnd({ active, over }: DragEndEvent) {
+    setDraggingSlideId(null);
+    const id = String(active.id);
+    if (over) moveSlide(id, slideOrder.indexOf(String(over.id)));
+    useUiStore.getState().goToSlide(id);
   }
 
   return (
-    <ol className="flex flex-col gap-3">
-      {slideOrder.map((slideId, index) => (
-        <li key={slideId}>
-          <Thumbnail slideId={slideId} index={index} active={slideId === currentSlideId} />
-        </li>
-      ))}
-    </ol>
-  );
-}
-
-function Thumbnail({ slideId, index, active }: { slideId: string; index: number; active: boolean }) {
-  const title = useDeckStore((s) => s.deck.slides[slideId]?.title ?? "");
-  const goToSlide = useUiStore((s) => s.goToSlide);
-  const ref = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (active) ref.current?.scrollIntoView({ block: "nearest" });
-  }, [active]);
-
-  return (
-    <button
-      ref={ref}
-      type="button"
-      onClick={() => goToSlide(slideId)}
-      aria-current={active ? "true" : undefined}
-      className="group flex w-full items-start gap-2 text-left focus:outline-none"
-    >
-      <span className={`w-4 pt-1 text-right text-xs tabular-nums ${active ? "font-semibold text-accent" : "text-zinc-400"}`}>
-        {index + 1}
-      </span>
-      <span className="flex min-w-0 flex-col gap-1">
-        <span
-          className={`block overflow-hidden rounded-sm ring-offset-1 ${
-            active ? "ring-2 ring-accent" : "ring-1 ring-zinc-200 group-hover:ring-zinc-400 group-focus-visible:ring-zinc-500"
-          }`}
+    <div className="flex flex-col gap-3">
+      {slideOrder.length > 0 && (
+        <DndContext
+          id="filmstrip"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          accessibility={{ screenReaderInstructions }}
+          onDragStart={onDragStart}
+          onDragOver={onDragOver}
+          onDragEnd={onDragEnd}
+          onDragCancel={() => setDraggingSlideId(null)}
         >
-          <ScaledArtboard scale={THUMBNAIL_WIDTH / ARTBOARD_WIDTH}>
-            <SlideRenderer slideId={slideId} variant="thumbnail" />
-          </ScaledArtboard>
-        </span>
-        <span className="truncate text-xs text-zinc-600" style={{ maxWidth: THUMBNAIL_WIDTH }}>
-          {title}
-        </span>
-      </span>
-    </button>
+          <SortableContext items={slideOrder} strategy={verticalListSortingStrategy}>
+            <ol data-filmstrip className="flex flex-col gap-3">
+              {slideOrder.map((slideId, index) => (
+                <SlideThumbnail key={slideId} slideId={slideId} index={index} active={slideId === currentSlideId} />
+              ))}
+            </ol>
+          </SortableContext>
+          <DragOverlay modifiers={[restrictToVerticalAxis]} dropAnimation={null}>
+            {draggingSlideId ? (
+              <div className="flex items-start gap-2">
+                <span className="w-4" />
+                <div className="relative rounded-sm shadow-xl ring-2 ring-accent">
+                  <ThumbnailArt slideId={draggingSlideId} />
+                  <span className="absolute -top-2 -right-2 rounded bg-accent px-1.5 py-0.5 text-[10px] font-medium text-white tabular-nums">
+                    Slide {overIndex + 1}
+                  </span>
+                </div>
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      )}
+      <button
+        type="button"
+        onClick={() => addBlankSlide("end")}
+        title="Add a blank slide at the end"
+        className="ml-6 flex aspect-video items-center justify-center rounded-sm border border-dashed border-zinc-300 text-xs text-zinc-500 hover:border-accent hover:text-accent"
+      >
+        + Add slide
+      </button>
+    </div>
   );
 }
