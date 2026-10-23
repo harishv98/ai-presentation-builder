@@ -3,11 +3,19 @@
 import { memo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { ARTBOARD_HEIGHT, ARTBOARD_WIDTH } from "@/lib/deck/constants";
-import type { Element } from "@/lib/deck/schema";
+import type { Box, Element } from "@/lib/deck/schema";
 import { useDeckStore } from "@/lib/deck/store";
 import { ElementView, type RenderVariant } from "./elements/ElementView";
 
-export function SlideRenderer({ slideId, variant = "canvas" }: { slideId: string; variant?: RenderVariant }) {
+export function SlideRenderer({
+  slideId,
+  variant = "canvas",
+  previewBoxes,
+}: {
+  slideId: string;
+  variant?: RenderVariant;
+  previewBoxes?: Record<string, Box>;
+}) {
   const background = useDeckStore((s) => s.deck.slides[slideId]?.background.color);
   const elements = useDeckStore(
     useShallow((s) =>
@@ -22,7 +30,13 @@ export function SlideRenderer({ slideId, variant = "canvas" }: { slideId: string
   return (
     <div className="relative overflow-hidden" style={{ width: ARTBOARD_WIDTH, height: ARTBOARD_HEIGHT, background }}>
       {elements.map((element, z) => (
-        <PositionedElement key={element.id} element={element} z={z} variant={variant} />
+        <PositionedElement
+          key={element.id}
+          element={element}
+          box={previewBoxes?.[element.id] ?? element.box}
+          z={z}
+          variant={variant}
+        />
       ))}
     </div>
   );
@@ -30,17 +44,31 @@ export function SlideRenderer({ slideId, variant = "canvas" }: { slideId: string
 
 const PositionedElement = memo(function PositionedElement({
   element,
+  box,
   z,
   variant,
 }: {
   element: Element;
+  box: Box;
   z: number;
   variant: RenderVariant;
 }) {
-  const { x, y, w, h } = element.box;
+  const resized = box.w !== element.box.w || box.h !== element.box.h;
+  const shown = resized ? { ...element, box } : element;
   return (
-    <div data-element-id={element.id} className="absolute" style={{ left: x, top: y, width: w, height: h, zIndex: z }}>
-      <ElementView element={element} variant={variant} />
+    <div
+      data-element-id={element.id}
+      className={`absolute ${variant === "canvas" ? "outline-accent/40 hover:outline" : ""}`}
+      style={{
+        left: box.x,
+        top: box.y,
+        width: box.w,
+        height: box.h,
+        zIndex: z,
+        outlineWidth: "calc(1.5px / var(--artboard-scale))",
+      }}
+    >
+      <ElementView element={shown} variant={variant} />
     </div>
   );
 });

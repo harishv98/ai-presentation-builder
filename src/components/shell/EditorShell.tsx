@@ -1,8 +1,7 @@
 "use client";
 
-import { ArtboardViewport } from "@/components/canvas/ArtboardViewport";
+import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { Filmstrip } from "@/components/filmstrip/Filmstrip";
-import { SlideRenderer } from "@/components/slide/SlideRenderer";
 import { useDeckStore } from "@/lib/deck/store";
 import { useCurrentSlideId } from "@/lib/ui/useCurrentSlideId";
 import { useEditorShortcuts } from "./useEditorShortcuts";
@@ -52,11 +51,7 @@ function CanvasArea() {
     );
   }
 
-  return (
-    <ArtboardViewport>
-      <SlideRenderer slideId={slideId} />
-    </ArtboardViewport>
-  );
+  return <CanvasStage slideId={slideId} />;
 }
 
 function HistoryButtons() {

@@ -6,7 +6,13 @@ import { ScaledArtboard } from "@/components/slide/ScaledArtboard";
 
 const VIEWPORT_PADDING = 48;
 
-export function ArtboardViewport({ children }: { children?: ReactNode }) {
+export function ArtboardViewport({
+  children,
+  onBackgroundPointerDown,
+}: {
+  children?: ReactNode;
+  onBackgroundPointerDown?: () => void;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0);
 
@@ -28,7 +34,11 @@ export function ArtboardViewport({ children }: { children?: ReactNode }) {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative flex h-full w-full items-center justify-center overflow-hidden">
+    <div
+      ref={containerRef}
+      className="relative flex h-full w-full items-center justify-center overflow-hidden"
+      onPointerDown={onBackgroundPointerDown}
+    >
       {scale > 0 && (
         <div className="shadow-lg ring-1 ring-black/5">
           <ScaledArtboard scale={scale}>{children}</ScaledArtboard>

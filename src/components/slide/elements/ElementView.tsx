@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { Element } from "@/lib/deck/schema";
 import { ChartView } from "./ChartView";
 import { ImageView } from "./ImageView";
@@ -7,7 +8,13 @@ import { TextView } from "./TextView";
 
 export type RenderVariant = "canvas" | "thumbnail";
 
-export function ElementView({ element, variant }: { element: Element; variant: RenderVariant }) {
+export const ElementView = memo(function ElementView({
+  element,
+  variant,
+}: {
+  element: Element;
+  variant: RenderVariant;
+}) {
   switch (element.type) {
     case "text":
       return <TextView element={element} />;
@@ -20,4 +27,4 @@ export function ElementView({ element, variant }: { element: Element; variant: R
     case "shape":
       return <ShapeView element={element} />;
   }
-}
+});

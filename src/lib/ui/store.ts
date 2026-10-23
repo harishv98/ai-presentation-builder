@@ -1,16 +1,42 @@
 import { create } from "zustand";
-import type { Deck } from "@/lib/deck/schema";
+import type { Guide } from "@/lib/canvas/snap";
+import type { Box, Deck } from "@/lib/deck/schema";
 import { useDeckStore } from "@/lib/deck/store";
+
+export type DragPreview = { boxes: Record<string, Box>; guides: Guide[] };
 
 type UiState = {
   currentSlideId: string | null;
+  selectedIds: string[];
+  dragPreview: DragPreview | null;
+  marquee: Box | null;
   goToSlide: (id: string) => void;
+  setSelection: (ids: string[]) => void;
+  toggleSelected: (id: string) => void;
+  clearSelection: () => void;
+  setDragPreview: (preview: DragPreview | null) => void;
+  setMarquee: (box: Box | null) => void;
 };
 
 export const useUiStore = create<UiState>()((set) => ({
   currentSlideId: null,
-  goToSlide: (id) => set({ currentSlideId: id }),
+  selectedIds: [],
+  dragPreview: null,
+  marquee: null,
+  goToSlide: (id) => set((s) => (s.currentSlideId === id ? s : { currentSlideId: id, selectedIds: [] })),
+  setSelection: (ids) => set({ selectedIds: ids }),
+  toggleSelected: (id) =>
+    set((s) => ({
+      selectedIds: s.selectedIds.includes(id) ? s.selectedIds.filter((x) => x !== id) : [...s.selectedIds, id],
+    })),
+  clearSelection: () => set((s) => (s.selectedIds.length === 0 ? s : { selectedIds: [] })),
+  setDragPreview: (preview) => set({ dragPreview: preview }),
+  setMarquee: (box) => set({ marquee: box }),
 }));
+
+export function selectionOnSlide(deck: Deck, slideId: string, ids: string[]): string[] {
+  return deck.slides[slideId]?.elementOrder.filter((id) => ids.includes(id)) ?? [];
+}
 
 export function resolveCurrentSlideId(deck: Deck, storedId: string | null): string | null {
   if (storedId && deck.slides[storedId]) return storedId;
@@ -25,4 +51,14 @@ export function goRelative(delta: 1 | -1): void {
   const index = deck.slideOrder.indexOf(current);
   const next = deck.slideOrder[Math.min(Math.max(index + delta, 0), deck.slideOrder.length - 1)];
   if (next) goToSlide(next);
+}
+
+declare global {
+  interface Window {
+    uiStore?: typeof useUiStore;
+  }
+}
+
+if (process.env.NODE_ENV !== "production" && typeof window !== "undefined") {
+  window.uiStore = useUiStore;
 }
