@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --color-chrome: #f4f4f5;
+  --color-chrome-border: #e4e4e7;
+  --color-accent: #4f46e5;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-chrome text-zinc-900 antialiased;
+}
