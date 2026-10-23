@@ -1,6 +1,7 @@
 "use client";
 
 import { CanvasStage } from "@/components/canvas/CanvasStage";
+import { ChatPanel } from "@/components/chat/ChatPanel";
 import { Filmstrip } from "@/components/filmstrip/Filmstrip";
 import { FilmstripToolbar } from "@/components/filmstrip/FilmstripToolbar";
 import { useDeckStore } from "@/lib/deck/store";
@@ -32,14 +33,7 @@ export function EditorShell() {
           <CanvasArea />
         </main>
 
-        <aside className="flex w-[360px] shrink-0 flex-col border-l border-chrome-border bg-white">
-          <h2 className="border-b border-chrome-border px-4 py-3 text-xs font-medium tracking-wide text-zinc-500 uppercase">
-            Chat
-          </h2>
-          <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-zinc-400">
-            Describe the deck you want to create.
-          </div>
-        </aside>
+        <ChatPanel />
       </div>
     </div>
   );
