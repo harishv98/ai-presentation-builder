@@ -44,6 +44,7 @@ export function createTurnAccumulator(
 ) {
   let text = "";
   let usage: unknown;
+  let finishReason: string | null = null;
   const calls: ToolCall[] = [];
   let open = -1;
 
@@ -61,6 +62,7 @@ export function createTurnAccumulator(
       const chunk = raw as StreamChunk;
       if (chunk.error) throw new Error(chunk.error.message ?? "The model stream failed");
       if (chunk.usage) usage = chunk.usage;
+      finishReason = chunk.choices?.[0]?.finish_reason ?? finishReason;
       const delta = chunk.choices?.[0]?.delta;
       if (!delta) return;
       if (delta.content) {
@@ -81,7 +83,7 @@ export function createTurnAccumulator(
     },
     finish() {
       closeOpen();
-      return { text, toolCalls: calls.filter(Boolean), usage };
+      return { text, toolCalls: calls.filter(Boolean), usage, truncated: finishReason === "length" };
     },
   };
 }

@@ -11,6 +11,7 @@ Rules:
 - Chart series need exactly one number per category. Changing chart type keeps the data.
 - The artboard is 1600x900, origin top-left. Keep about 80 units of margin.
 - Tool calls take effect immediately and the snapshot below already shows their result. Make each change once: never repeat or further refine a change that succeeded.
+- To undo or revert an earlier change, restore the "before" state listed under "Changes from your earlier replies" with the update tools.
 - If a tool returns an error, fix the arguments and retry, or explain the problem.
 - If the request is ambiguous, ask one short question instead of calling tools.
 - As soon as the request is satisfied, stop calling tools and reply with one short sentence saying what you changed. Do not mention ids.

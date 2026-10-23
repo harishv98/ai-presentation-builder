@@ -93,7 +93,7 @@ Rules:
 
 ### 5.1 Proxy route — `app/api/chat/route.ts`
 - Input: `{ mode: 'plan' | 'populate' | 'edit', messages, deckSnapshot, slideId? }`.
-- Server attaches system prompt for the mode, tool definitions (from zod), model id, `reasoning_effort: "low"` (reasoning models only), capped `max_tokens`, `stream: true`.
+- Server attaches system prompt for the mode, tool definitions (from zod), model id, `reasoning_effort: "low"` (sarvam-105b defaults to medium and can spend the whole output budget reasoning), `max_tokens: 3000`, `stream: true`.
 - Guards: per-IP rate limit (40/min, 400/day, in-memory per instance, counted before parsing; one agent reply makes 2–4 requests), 200 KB body limit, zod-validated body with no `system` role, mode-allowed tool subset.
 - Key: `SARVAM_API_KEY` from `process.env` only. `.env.local` git-ignored; `.env.example` committed.
 - Streams Sarvam SSE through to the client unchanged.
@@ -112,7 +112,8 @@ Rules:
 
 ### 5.4 Edit mode
 - Full slide/element/chart/table tool set. System prompt: never recreate existing content; reference ids; preserve boxes of elements not mentioned; delete only when asked; fill a slide in the same reply that adds it; make each change once.
-- Loop safeguards (sarvam-105b otherwise re-applies the same edit until the step cap): tool results carry `applied` and `previously` (the element before the edit); the snapshot marks elements and slides `(added by you this reply)` / `(edited by you this reply)`; a call identical to one that already succeeded is skipped, and a step of only repeats ends the reply. A reply that ends with no text shows a notice instead.
+- Loop safeguards (sarvam-105b otherwise re-applies the same edit until the step cap): tool results carry `applied` and `previously` (the element before the edit); the snapshot marks elements and slides `(added by you this reply)` / `(edited by you this reply)`; a call identical to one that already succeeded is skipped, and a step of only repeats ends the reply. A reply that ends with no text shows a notice instead (a distinct one when the model hit `max_tokens`).
+- Revert support: chat history keeps only reply text, so the snapshot ends with "Changes from your earlier replies" (last 3 turns, each change with its before-state). "Revert it back" restores that state with the update tools.
 
 ### 5.5 Tools
 - Slides: `add_slide`, `update_slide`, `delete_slide`, `reorder_slides`, `duplicate_slide`, `change_layout`

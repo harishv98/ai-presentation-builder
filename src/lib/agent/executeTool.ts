@@ -11,6 +11,7 @@ export type ToolExecution = {
   summary: string;
   touched: string[];
   added: string[];
+  previously: string[];
   content: string;
 };
 
@@ -47,6 +48,7 @@ export function executeToolCall(call: ToolCall, meta: { txnId: string; label: st
       summary: outcome.summary,
       touched: outcome.touched,
       added,
+      previously,
       content: JSON.stringify({
         ok: true,
         applied: outcome.summary,
@@ -60,5 +62,5 @@ export function executeToolCall(call: ToolCall, meta: { txnId: string; label: st
 }
 
 function failed(base: { callId: string; name: string }, error: string): ToolExecution {
-  return { ...base, ok: false, summary: error, touched: [], added: [], content: JSON.stringify({ ok: false, error }) };
+  return { ...base, ok: false, summary: error, touched: [], added: [], previously: [], content: JSON.stringify({ ok: false, error }) };
 }

@@ -3,8 +3,8 @@ import { toOpenAiTools } from "@/lib/agent/tools";
 import { editSystemPrompt } from "./prompts";
 
 const SARVAM_URL = "https://api.sarvam.ai/v2/chat/completions";
-const REASONING_MODELS = new Set(["glm5.3", "deepseekv4.1-flash"]);
-const EDIT_MAX_TOKENS = 1500;
+const REASONING_MODELS = new Set(["sarvam-105b", "glm5.3", "deepseekv4.1-flash"]);
+const EDIT_MAX_TOKENS = 3000;
 const TOOLS = toOpenAiTools();
 
 export function buildCompletionBody(request: ChatRequest) {

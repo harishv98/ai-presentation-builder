@@ -9,17 +9,19 @@ export type ChatItem =
 
 type WithoutId<T> = T extends unknown ? Omit<T, "id"> : never;
 export type NewChatItem = WithoutId<ChatItem>;
+export type TurnChanges = { prompt: string; changes: string[] };
 
 type ChatState = {
   items: ChatItem[];
   history: ChatMessage[];
+  recentChanges: TurnChanges[];
   draft: string;
   abort: AbortController | null;
   setDraft: (draft: string) => void;
   pushItem: (item: NewChatItem) => string;
   appendText: (id: string, delta: string) => void;
   beginTurn: (abort: AbortController) => void;
-  endTurn: (exchange: ChatMessage[]) => void;
+  endTurn: (exchange: ChatMessage[], changes: TurnChanges) => void;
 };
 
 let nextItemId = 1;
@@ -27,6 +29,7 @@ let nextItemId = 1;
 export const useChatStore = create<ChatState>()((set) => ({
   items: [],
   history: [],
+  recentChanges: [],
   draft: "",
   abort: null,
   setDraft: (draft) => set({ draft }),
@@ -40,7 +43,12 @@ export const useChatStore = create<ChatState>()((set) => ({
       items: s.items.map((item) => (item.id === id && item.kind === "assistant" ? { ...item, text: item.text + delta } : item)),
     })),
   beginTurn: (abort) => set({ abort }),
-  endTurn: (exchange) => set((s) => ({ abort: null, history: [...s.history, ...exchange].slice(-HISTORY_MESSAGES) })),
+  endTurn: (exchange, changes) =>
+    set((s) => ({
+      abort: null,
+      history: [...s.history, ...exchange].slice(-HISTORY_MESSAGES),
+      recentChanges: changes.changes.length > 0 ? [...s.recentChanges, changes].slice(-HISTORY_MESSAGES / 2) : s.recentChanges,
+    })),
 }));
 
 export const selectRunning = (s: ChatState) => s.abort !== null;

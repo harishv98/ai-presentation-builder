@@ -1,4 +1,4 @@
-import { useChatStore } from "@/lib/chat/store";
+import { useChatStore, type TurnChanges } from "@/lib/chat/store";
 import { useDeckStore } from "@/lib/deck/store";
 import { resolveCurrentSlideId, useUiStore } from "@/lib/ui/store";
 import { executeToolCall, type ToolExecution } from "./executeTool";
@@ -7,8 +7,14 @@ import { revealAiChanges } from "./reveal";
 import { clip, serializeForAI, type TurnMarks } from "./snapshot";
 import { createTurnAccumulator, readSseEvents } from "./sse";
 
-type TurnMeta = { txnId: string; label: string; applied: Set<string>; marks: TurnMarks };
-type StepResult = { text: string; toolCalls: ToolCall[]; executions: ToolExecution[]; onlyRepeats: boolean };
+type TurnMeta = { txnId: string; label: string; applied: Set<string>; marks: TurnMarks; changes: string[] };
+type StepResult = {
+  text: string;
+  toolCalls: ToolCall[];
+  executions: ToolExecution[];
+  onlyRepeats: boolean;
+  truncated: boolean;
+};
 
 const REPEAT_RESULT = JSON.stringify({ ok: true, applied: "Already applied earlier in this reply; nothing changed" });
 
@@ -42,6 +48,7 @@ export async function runAgent(prompt: string): Promise<void> {
     label: `AI: ${clip(text, 40)}`,
     applied: new Set(),
     marks: new Map(),
+    changes: [],
   };
   const turn: ChatMessage[] = [{ role: "user", content: text }];
   let reply = "";
@@ -61,7 +68,10 @@ export async function runAgent(prompt: string): Promise<void> {
       if (result.toolCalls.length === 0 || result.onlyRepeats) {
         if (!result.text.trim()) {
           const kept = meta.marks.size > 0 ? " Its changes are applied; ⌘Z undoes them." : "";
-          notice("info", `The AI ended without replying.${kept}`);
+          const why = result.truncated
+            ? "The AI ran out of room while thinking and didn't reply. Try a more specific request."
+            : "The AI ended without replying.";
+          notice("info", `${why}${kept}`, result.truncated && meta.marks.size === 0 ? text : undefined);
         }
         return;
       }
@@ -71,17 +81,25 @@ export async function runAgent(prompt: string): Promise<void> {
     if (abort.signal.aborted) notice("info", "Stopped. Changes made so far are kept; ⌘Z undoes them.");
     else notice("error", describeError(error), text);
   } finally {
-    useChatStore.getState().endTurn([
-      { role: "user", content: text },
-      { role: "assistant", content: reply.trim() || "(no reply)" },
-    ]);
+    useChatStore.getState().endTurn(
+      [
+        { role: "user", content: text },
+        { role: "assistant", content: reply.trim() || "(no reply)" },
+      ],
+      { prompt: text, changes: meta.changes },
+    );
   }
 }
 
 async function runStep(step: number, messages: ChatMessage[], signal: AbortSignal, meta: TurnMeta): Promise<StepResult> {
   const { deck } = useDeckStore.getState();
   const currentSlideId = resolveCurrentSlideId(deck, useUiStore.getState().currentSlideId);
-  const request: ChatRequest = { mode: "edit", messages, deckSnapshot: serializeForAI(deck, currentSlideId, meta.marks) };
+  const request: ChatRequest = {
+    mode: "edit",
+    messages,
+    deckSnapshot:
+      serializeForAI(deck, currentSlideId, meta.marks) + describeRecentChanges(useChatStore.getState().recentChanges),
+  };
 
   const res = await fetch("/api/chat", {
     method: "POST",
@@ -114,6 +132,7 @@ async function runStep(step: number, messages: ChatMessage[], signal: AbortSigna
           summary: "",
           touched: [],
           added: [],
+          previously: [],
           content: REPEAT_RESULT,
         });
         return;
@@ -122,6 +141,8 @@ async function runStep(step: number, messages: ChatMessage[], signal: AbortSigna
       executions.push(execution);
       if (execution.ok) {
         meta.applied.add(signature);
+        const before = execution.previously.length > 0 ? ` (before: ${clip(execution.previously.join("; "), 400)})` : "";
+        meta.changes.push(`${execution.summary}${before}`);
         for (const id of execution.touched) {
           meta.marks.set(id, execution.added.includes(id) || meta.marks.get(id) === "added" ? "added" : "edited");
         }
@@ -136,9 +157,15 @@ async function runStep(step: number, messages: ChatMessage[], signal: AbortSigna
   });
 
   for await (const event of readSseEvents(res.body)) accumulator.push(event);
-  const { text, toolCalls, usage } = accumulator.finish();
+  const { text, toolCalls, usage, truncated } = accumulator.finish();
   if (process.env.NODE_ENV !== "production" && usage) console.debug(`[agent] step ${step + 1} usage`, usage);
-  return { text, toolCalls, executions, onlyRepeats: toolCalls.length > 0 && repeats === toolCalls.length };
+  return { text, toolCalls, executions, truncated, onlyRepeats: toolCalls.length > 0 && repeats === toolCalls.length };
+}
+
+function describeRecentChanges(turns: TurnChanges[]): string {
+  if (turns.length === 0) return "";
+  const lines = turns.flatMap((turn) => [`For "${clip(turn.prompt, 80)}":`, ...turn.changes.map((change) => `- ${change}`)]);
+  return `\n\nChanges from your earlier replies, oldest first ("before" is the state prior to that change):\n${lines.join("\n")}`;
 }
 
 function callSignature(call: ToolCall): string {
