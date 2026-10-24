@@ -15,6 +15,7 @@ import { startEditing } from "@/lib/content/actions";
 import { useDeckStore } from "@/lib/deck/store";
 import { deleteCurrentSlide, duplicateCurrentSlide, isFilmstripFocused } from "@/lib/slides/actions";
 import { goRelative, useUiStore } from "@/lib/ui/store";
+import { printDeck } from "./PrintDeck";
 
 const NUDGE_SMALL = 1;
 const NUDGE_LARGE = 20;
@@ -45,6 +46,11 @@ export function useEditorShortcuts(): void {
       const key = event.key.toLowerCase();
       const { undo, redo } = useDeckStore.getState();
 
+      if (mod && key === "p") {
+        event.preventDefault();
+        printDeck();
+        return;
+      }
       if (mod && key === "z") {
         event.preventDefault();
         if (event.shiftKey) redo();

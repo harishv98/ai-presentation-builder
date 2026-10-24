@@ -14,6 +14,7 @@ import { useDeckStore } from "@/lib/deck/store";
 import { useGenerationStore } from "@/lib/generation/store";
 import { startNewDeck } from "@/lib/slides/actions";
 import { useCurrentSlideId } from "@/lib/ui/useCurrentSlideId";
+import { PrintDeck, printDeck } from "./PrintDeck";
 import { RightPanel } from "./RightPanel";
 import { SelectionToolbar } from "./SelectionToolbar";
 import { useEditorShortcuts } from "./useEditorShortcuts";
@@ -25,29 +26,35 @@ export function EditorShell() {
   const deckTitle = useDeckStore((s) => s.deck.title);
 
   return (
-    <div className="flex h-screen flex-col">
-      <header className="flex h-12 shrink-0 items-center justify-between border-b border-chrome-border bg-white px-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="truncate text-sm font-semibold">{deckTitle}</span>
-          <NewDeckButton />
+    <>
+      <div className="flex h-screen flex-col print:hidden">
+        <header className="flex h-12 shrink-0 items-center justify-between border-b border-chrome-border bg-white px-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="truncate text-sm font-semibold">{deckTitle}</span>
+            <NewDeckButton />
+          </div>
+          <SelectionToolbar />
+          <div className="flex items-center gap-2">
+            <HistoryButtons />
+            <ExportButton />
+          </div>
+        </header>
+
+        <div className="flex min-h-0 flex-1">
+          <aside className="flex w-[216px] shrink-0 flex-col gap-3 overflow-y-auto border-r border-chrome-border bg-white p-3">
+            <FilmstripToolbar />
+            <Filmstrip />
+          </aside>
+
+          <main id={CANVAS_REGION_ID} tabIndex={-1} aria-label="Slide canvas" className="min-w-0 flex-1 focus:outline-none">
+            <CanvasArea />
+          </main>
+
+          <RightPanel />
         </div>
-        <SelectionToolbar />
-        <HistoryButtons />
-      </header>
-
-      <div className="flex min-h-0 flex-1">
-        <aside className="flex w-[216px] shrink-0 flex-col gap-3 overflow-y-auto border-r border-chrome-border bg-white p-3">
-          <FilmstripToolbar />
-          <Filmstrip />
-        </aside>
-
-        <main id={CANVAS_REGION_ID} tabIndex={-1} aria-label="Slide canvas" className="min-w-0 flex-1 focus:outline-none">
-          <CanvasArea />
-        </main>
-
-        <RightPanel />
       </div>
-    </div>
+      <PrintDeck />
+    </>
   );
 }
 
@@ -77,6 +84,21 @@ function NewDeckButton() {
       className="rounded border border-chrome-border px-2.5 py-1 text-sm text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:text-zinc-300 disabled:hover:bg-transparent"
     >
       New deck
+    </button>
+  );
+}
+
+function ExportButton() {
+  const empty = useDeckStore((s) => s.deck.slideOrder.length === 0);
+  return (
+    <button
+      type="button"
+      onClick={printDeck}
+      disabled={empty}
+      title="Save as PDF from the print dialog (⌘P)"
+      className="rounded border border-chrome-border px-2.5 py-1 text-sm text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:text-zinc-300 disabled:hover:bg-transparent"
+    >
+      Export PDF
     </button>
   );
 }

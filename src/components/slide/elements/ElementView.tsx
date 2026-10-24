@@ -6,7 +6,7 @@ import { ShapeView } from "./ShapeView";
 import { TableView } from "./TableView";
 import { TextView } from "./TextView";
 
-export type RenderVariant = "canvas" | "thumbnail";
+export type RenderVariant = "canvas" | "thumbnail" | "print";
 
 export const ElementView = memo(function ElementView({
   element,

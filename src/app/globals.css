@@ -72,3 +72,25 @@ body {
     animation: none;
   }
 }
+
+.print-deck {
+  position: fixed;
+  left: -100000px;
+}
+
+@media print {
+  @page {
+    size: 1600px 900px;
+    margin: 0;
+  }
+
+  .print-deck {
+    position: static;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .print-deck > * {
+    break-after: page;
+  }
+}
