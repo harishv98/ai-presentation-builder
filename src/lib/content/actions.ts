@@ -1,4 +1,5 @@
 import { ARTBOARD_HEIGHT } from "@/lib/deck/constants";
+import { elementDef } from "@/lib/deck/elements";
 import type { ElementPatch } from "@/lib/deck/ops";
 import type { ElementOf, ElementType } from "@/lib/deck/schema";
 import { useDeckStore } from "@/lib/deck/store";
@@ -34,17 +35,16 @@ export function startEditing(
   if (!element) return;
   const ui = useUiStore.getState();
   ui.setSelection([id]);
-  switch (element.type) {
-    case "text":
+  switch (elementDef(element).activate) {
+    case "edit-text":
       ui.setEditing({ kind: "text", elementId: id, caret: at.caret ?? "all" });
       return;
-    case "table": {
+    case "edit-cell": {
       const cell = at.cell ?? { row: 0, col: 0 };
       ui.setEditing({ kind: "cell", elementId: id, row: cell.row, col: cell.col, txnId: crypto.randomUUID() });
       return;
     }
-    case "chart":
-    case "image":
+    case "inspector":
       ui.setRightPanel("format");
   }
 }

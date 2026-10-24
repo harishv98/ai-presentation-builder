@@ -1,3 +1,4 @@
+import { elementDef } from "@/lib/deck/elements";
 import type { Op } from "@/lib/deck/ops";
 import type { Box, Deck, Element, SlideLayout } from "@/lib/deck/schema";
 
@@ -18,7 +19,7 @@ export function arrangeSlide(deck: Deck, slideId: string): Op[] {
   const layout = deck.slides[slideId]?.layout;
   if (!layout) return [];
   const elements = bodyElements(deck, slideId);
-  const boxes = arrangeBoxes(layout, elements.map((element) => ({ id: element.id, visual: element.type !== "text" })));
+  const boxes = arrangeBoxes(layout, elements.map((element) => ({ id: element.id, visual: elementDef(element).visual })));
   return elements.flatMap((element) => {
     const box = boxes[element.id];
     return box && !sameBox(box, element.box) ? [{ op: "update_element" as const, id: element.id, patch: { box } }] : [];

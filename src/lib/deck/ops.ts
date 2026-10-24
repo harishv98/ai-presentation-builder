@@ -1,4 +1,5 @@
 import { current, enablePatches, produceWithPatches, type Draft, type Patch } from "immer";
+import { elementDef } from "./elements";
 import { clampBox, isFiniteBox } from "./geometry";
 import type {
   Box,
@@ -144,7 +145,7 @@ function applyOne(draft: Draft<Deck>, op: Op): OpResult {
         if (!isFiniteBox(merged)) return fail("Element box must have finite x, y, w, h");
         element.box = clampBox(merged);
       }
-      mergePayload(element, payloadPatch);
+      elementDef(element).merge(element, payloadPatch);
       return ok(op.id);
     }
 
@@ -212,29 +213,6 @@ function cloneElementInto(draft: Draft<Deck>, element: Element, slide: Draft<Sli
   draft.elements[id] = { ...structuredClone(element), id, slideId: slide.id, box: clampBox(element.box) };
   slide.elementOrder.push(id);
   return id;
-}
-
-function mergePayload(element: Draft<Element>, patch: Omit<ElementPatch, "box">): void {
-  switch (element.type) {
-    case "text": {
-      const { style, ...rest } = patch.text ?? {};
-      Object.assign(element.text, rest);
-      if (style) Object.assign(element.text.style, style);
-      return;
-    }
-    case "image":
-      Object.assign(element.image, patch.image);
-      return;
-    case "chart":
-      Object.assign(element.chart, patch.chart);
-      return;
-    case "table":
-      Object.assign(element.table, patch.table);
-      return;
-    case "shape":
-      Object.assign(element.shape, patch.shape);
-      return;
-  }
 }
 
 function insertAt(list: string[], id: string, index?: number): void {
