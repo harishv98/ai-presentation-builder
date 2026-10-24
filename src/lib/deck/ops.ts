@@ -30,6 +30,7 @@ export type ElementPatch = {
 
 export type Op =
   | { op: "add_slide"; slide?: Partial<Omit<Slide, "id" | "elementOrder">>; index?: number }
+  | { op: "update_deck"; patch: { title?: string } }
   | { op: "update_slide"; id: string; patch: Partial<Pick<Slide, "title" | "layout" | "background" | "notes">> }
   | { op: "delete_slide"; id: string }
   | { op: "reorder_slides"; id: string; toIndex: number }
@@ -62,6 +63,11 @@ const fail = (error: string): OpResult => ({ ok: false, error });
 
 function applyOne(draft: Draft<Deck>, op: Op): OpResult {
   switch (op.op) {
+    case "update_deck": {
+      if (op.patch.title !== undefined) draft.title = op.patch.title;
+      return ok();
+    }
+
     case "add_slide": {
       const id = newId(draft, "s");
       draft.slides[id] = {

@@ -22,10 +22,10 @@ const contentTitle = (title: string) => text("title", [title], CONTENT_TITLE_BOX
 
 const add = (slideId: string, element: NewElement): Op => ({ op: "add_element", slideId, element });
 
-export function createSampleDeck(): Deck {
-  const empty: Deck = {
-    id: "deck-sample",
-    title: "Q3 Product Roadmap",
+export function createEmptyDeck(): Deck {
+  return {
+    id: "deck-1",
+    title: "Untitled deck",
     theme: "default",
     aspectRatio: "16:9",
     slideOrder: [],
@@ -33,6 +33,10 @@ export function createSampleDeck(): Deck {
     elements: {},
     nextId: 1,
   };
+}
+
+export function createSampleDeck(): Deck {
+  const empty: Deck = { ...createEmptyDeck(), id: "deck-sample", title: "Q3 Product Roadmap" };
 
   const ops: Op[] = [
     { op: "add_slide", slide: { title: "Q3 Product Roadmap", layout: "title", background: { color: INK } } },

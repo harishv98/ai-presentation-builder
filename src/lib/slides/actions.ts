@@ -1,3 +1,4 @@
+import { createSampleDeck } from "@/lib/deck/fixture";
 import { useDeckStore } from "@/lib/deck/store";
 import { resolveCurrentSlideId, useUiStore } from "@/lib/ui/store";
 
@@ -57,4 +58,22 @@ export function moveSlide(id: string, toIndex: number): void {
 
 export function isFilmstripFocused(): boolean {
   return document.activeElement?.closest("[data-filmstrip]") != null;
+}
+
+export function startNewDeck(): void {
+  const { deck, applyOps } = useDeckStore.getState();
+  if (deck.slideOrder.length === 0) return;
+  applyOps(
+    [
+      ...deck.slideOrder.map((id) => ({ op: "delete_slide" as const, id })),
+      { op: "update_deck", patch: { title: "Untitled deck" } },
+    ],
+    { source: "user", label: "New deck" },
+  );
+  requestAnimationFrame(() => document.getElementById("deck-prompt")?.focus());
+}
+
+export function loadSampleDeck(): void {
+  useDeckStore.getState().replaceDeck(createSampleDeck());
+  useUiStore.setState({ currentSlideId: null, selectedIds: [] });
 }

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { createSampleDeck } from "./fixture";
+import { createEmptyDeck } from "./fixture";
 import { recordTxn, redoTxn, undoTxn, type Txn, type TxnMeta } from "./history";
 import { applyOpsToDeck, type Op, type OpResult } from "./ops";
 import type { Deck } from "./schema";
@@ -8,15 +8,20 @@ type DeckState = {
   deck: Deck;
   past: Txn[];
   future: Txn[];
+  replaceDeck: (deck: Deck) => void;
   applyOps: (ops: Op[], meta: TxnMeta) => OpResult[];
   undo: () => void;
   redo: () => void;
 };
 
 export const useDeckStore = create<DeckState>()((set, get) => ({
-  deck: createSampleDeck(),
+  deck: createEmptyDeck(),
   past: [],
   future: [],
+
+  replaceDeck(deck) {
+    set({ deck, past: [], future: [] });
+  },
 
   applyOps(ops, meta) {
     const { deck, results, patches, inversePatches } = applyOpsToDeck(get().deck, ops);
