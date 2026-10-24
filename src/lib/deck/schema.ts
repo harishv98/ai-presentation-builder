@@ -11,7 +11,7 @@ export const TextStyleSchema = z.object({
 });
 
 export const TextPayloadSchema = z.object({
-  role: z.enum(["title", "subtitle", "body", "bullets"]),
+  role: z.enum(["title", "subtitle", "body", "bullets", "numbered"]),
   content: z.array(z.string()),
   style: TextStyleSchema,
 });

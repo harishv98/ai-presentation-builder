@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
-import { textCss } from "@/components/slide/elements/TextView";
+import { TextLines, textCss } from "@/components/slide/elements/TextView";
 import { commitText } from "@/lib/content/actions";
 import { useDeckStore } from "@/lib/deck/store";
 import { useUiStore, type TextCaret } from "@/lib/ui/store";
@@ -54,15 +54,7 @@ export function TextEditor({ elementId, caret }: { elementId: string; caret: Tex
       }}
       onDrop={(event) => event.preventDefault()}
     >
-      {initial.role === "bullets" ? (
-        <ul className="flex list-disc flex-col gap-[0.4em] pl-[1.2em]">
-          {lines.map((line, i) => (
-            <li key={i}>{line || <br />}</li>
-          ))}
-        </ul>
-      ) : (
-        lines.map((line, i) => <div key={i}>{line || <br />}</div>)
-      )}
+      <TextLines role={initial.role} lines={lines} editable />
     </div>
   );
 }

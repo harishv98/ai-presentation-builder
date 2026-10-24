@@ -6,6 +6,7 @@ import { ChartInspector } from "./ChartInspector";
 import { Hint } from "./fields";
 import { ImageInspector } from "./ImageInspector";
 import { TableInspector } from "./TableInspector";
+import { TextInspector } from "./TextInspector";
 
 export function Inspector() {
   const ids = useSelectedIds();
@@ -16,7 +17,7 @@ export function Inspector() {
 
   switch (element.type) {
     case "text":
-      return <Hint>Double-click the text on the slide, or press Enter, to edit it.</Hint>;
+      return <TextInspector key={element.id} element={element} />;
     case "table":
       return <TableInspector key={element.id} element={element} />;
     case "chart":

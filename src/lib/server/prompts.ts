@@ -46,7 +46,7 @@ Rules:
 - Add the slide's content in one round of tool calls: usually one text element plus the planned visual, at most three elements. If the slide already has some content, add only what is missing.
 - Never pass box; the editor lays the slide out.
 - Bullets: 3 to 5 items of at most 12 words each. Body text: at most 2 sentences.
-- By layout: title → one subtitle line (role "subtitle"), nothing else; section → one subtitle line; two-column → two bullet lists, or bullets plus an image; comparison → a table, or two bullet lists; chart-forward → the chart plus a short takeaway text; content → bullets plus the planned visual, if any.
+- By layout: title → one subtitle line (role "subtitle"), nothing else; section → one subtitle line; two-column → two bullet lists, or bullets plus an image; comparison → a table, or two bullet lists; chart-forward → the chart plus a short takeaway text; content → bullets plus the planned visual, if any. Use role "numbered" instead of "bullets" when the order matters (steps, rankings, timelines).
 - Charts: 3 to 8 categories, 1 to 3 series, exactly one number per category in each series. Use realistic numbers for the topic, a title, and axis labels.
 - Tables: a header row plus 2 to 6 rows, 2 to 5 columns, short cells.
 - Images: add_element with type "image", a 1-3 word photo keyword, and alt text describing the photo.

@@ -18,6 +18,7 @@ const ROLE_STYLE: Record<TextPayload["role"], Partial<TextStyle>> = {
   subtitle: { fontSize: 32 },
   body: { fontSize: 28 },
   bullets: { fontSize: 30 },
+  numbered: { fontSize: 30 },
 };
 
 export function textStyle(role: TextPayload["role"], overrides: Partial<TextStyle> = {}): TextStyle {
