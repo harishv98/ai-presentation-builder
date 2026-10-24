@@ -1,0 +1,24 @@
+data: {"id":"20261024_a22ec76f-a645-49c4-a99e-3e0af45f0829","choices":[{"delta":{"content":"","role":"assistant"},"finish_reason":null,"index":0,"logprobs":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk","prompt_token_ids":null,"prompt_text":null}
+
+data: {"id":"20261024_a22ec76f-a645-49c4-a99e-3e0af45f0829","choices":[{"delta":{"tool_calls":[{"index":0,"id":"chatcmpl-tool-993d17a79fca6bed","function":{"name":"add_element"},"type":"function"}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_a22ec76f-a645-49c4-a99e-3e0af45f0829","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"slideId\": \""}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_a22ec76f-a645-49c4-a99e-3e0af45f0829","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"s"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_a22ec76f-a645-49c4-a99e-3e0af45f0829","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"1"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_a22ec76f-a645-49c4-a99e-3e0af45f0829","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\", \"type\": \""}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_a22ec76f-a645-49c4-a99e-3e0af45f0829","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"text"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_a22ec76f-a645-49c4-a99e-3e0af45f0829","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\", \"text\": "}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_a22ec76f-a645-49c4-a99e-3e0af45f0829","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"role\": \"subtitle\", \"content\": [\"Q3 priorities center on revenue targets, key feature launches, and disciplined execution across our product roadmap.\"]}}"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_a22ec76f-a645-49c4-a99e-3e0af45f0829","choices":[{"delta":{},"finish_reason":"tool_calls","index":0,"logprobs":null,"stop_reason":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_a22ec76f-a645-49c4-a99e-3e0af45f0829","choices":[],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk","system_fingerprint":"vllm-0.29.1rc1.dev145+gfe61f3317-tp2-1c00f7c7","usage":{"completion_tokens":672,"prompt_tokens":2790,"total_tokens":3462,"completion_tokens_details":{"reasoning_tokens":607}}}
+
+data: [DONE]
+

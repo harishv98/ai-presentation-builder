@@ -1,0 +1,24 @@
+data: {"id":"20261024_f6f359b6-f71e-4c64-a314-e35cfd05629e","choices":[{"delta":{"content":"","role":"assistant"},"finish_reason":null,"index":0,"logprobs":null}],"created":1792827893,"model":"sarvam-105b","object":"chat.completion.chunk","prompt_token_ids":null,"prompt_text":null}
+
+data: {"id":"20261024_f6f359b6-f71e-4c64-a314-e35cfd05629e","choices":[{"delta":{"tool_calls":[{"index":0,"id":"chatcmpl-tool-98581d3b79cd745e","function":{"name":"plan_deck"},"type":"function"}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827893,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_f6f359b6-f71e-4c64-a314-e35cfd05629e","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"title\": \""}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827893,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_f6f359b6-f71e-4c64-a314-e35cfd05629e","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"Q"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827893,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_f6f359b6-f71e-4c64-a314-e35cfd05629e","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"3"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827893,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_f6f359b6-f71e-4c64-a314-e35cfd05629e","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":" Product"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827893,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_f6f359b6-f71e-4c64-a314-e35cfd05629e","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":" Roadmap"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827893,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_f6f359b6-f71e-4c64-a314-e35cfd05629e","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\", \"slides\": "}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827893,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_f6f359b6-f71e-4c64-a314-e35cfd05629e","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"[{\"title\": \"Q3 Product Roadmap\", \"layout\": \"title\", \"intent\": \"Overview of Q3 product priorities, revenue targets, and key feature launches.\", \"visual\": \"none\"}, {\"title\": \"Q3 Revenue Forecast by Segment\", \"layout\": \"chart-forward\", \"intent\": \"Projected revenue growth across enterprise, mid-market, and SMB segments for Q3, showing expected Q2-to-Q3 lift.\", \"visual\": \"chart\"}, {\"title\": \"Feature Comparison: Q3 Releases\", \"layout\": \"comparison\", \"intent\": \"Side-by-side comparison of new and existing features launching in Q3 versus Q2, including availability and impact.\", \"visual\": \"table\"}, {\"title\": \"Q3 Launch Timeline\", \"layout\": \"two-column\", \"intent\": \"Key milestones and release dates for Q3, with engineering and marketing dependencies.\", \"visual\": \"none\"}, {\"title\": \"Strategic Priorities for Q3\", \"layout\": \"content\", \"intent\": \"Focus areas including AI integration, performance optimization, and customer retention initiatives.\", \"visual\": \"none\"}, {\"title\": \"Next Steps and Q4 Preview\", \"layout\": \"content\", \"intent\": \"Action items for the team and a preview of Q4 strategic direction.\", \"visual\": \"none\"}]}"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827893,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_f6f359b6-f71e-4c64-a314-e35cfd05629e","choices":[{"delta":{},"finish_reason":"stop","index":0,"logprobs":null,"stop_reason":null,"token_ids":null}],"created":1792827893,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_f6f359b6-f71e-4c64-a314-e35cfd05629e","choices":[],"created":1792827893,"model":"sarvam-105b","object":"chat.completion.chunk","system_fingerprint":"vllm-0.29.1rc1.dev145+gfe61f3317-tp2-1c00f7c7","usage":{"completion_tokens":2539,"prompt_tokens":598,"total_tokens":3137,"completion_tokens_details":{"reasoning_tokens":2238}}}
+
+data: [DONE]
+

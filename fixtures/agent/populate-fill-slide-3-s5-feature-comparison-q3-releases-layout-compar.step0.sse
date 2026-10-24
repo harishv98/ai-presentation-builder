@@ -1,0 +1,20 @@
+data: {"id":"20261024_c9b5d24c-a1ad-41ee-b833-7acb3fbb17f6","choices":[{"delta":{"content":"","role":"assistant"},"finish_reason":null,"index":0,"logprobs":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk","prompt_token_ids":null,"prompt_text":null}
+
+data: {"id":"20261024_c9b5d24c-a1ad-41ee-b833-7acb3fbb17f6","choices":[{"delta":{"tool_calls":[{"index":0,"id":"chatcmpl-tool-a1f5bfe9fba2c67a","function":{"name":"add_table"},"type":"function"}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_c9b5d24c-a1ad-41ee-b833-7acb3fbb17f6","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"slideId\": \""}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_c9b5d24c-a1ad-41ee-b833-7acb3fbb17f6","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"s"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_c9b5d24c-a1ad-41ee-b833-7acb3fbb17f6","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"5"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_c9b5d24c-a1ad-41ee-b833-7acb3fbb17f6","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\", \"rows\": "}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_c9b5d24c-a1ad-41ee-b833-7acb3fbb17f6","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"[[\"Feature\", \"Q2 Status\", \"Q3 Status\", \"Availability\", \"Impact\"], [\"AI-Powered Insights\", \"Available\", \"Beta\", \"July 15\", \"High\"], [\"Advanced Analytics\", \"Available\", \"Enhanced\", \"August 1\", \"Medium\"], [\"Mobile App v2.0\", \"Available\", \"New Release\", \"July 30\", \"High\"], [\"SSO Integration\", \"Available\", \"Expanded\", \"September 1\", \"Medium\"], [\"Real-Time Collaboration\", \"Available\", \"Improved\", \"August 15\", \"High\"]]}"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_c9b5d24c-a1ad-41ee-b833-7acb3fbb17f6","choices":[{"delta":{},"finish_reason":"tool_calls","index":0,"logprobs":null,"stop_reason":null,"token_ids":null}],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_c9b5d24c-a1ad-41ee-b833-7acb3fbb17f6","choices":[],"created":1792827906,"model":"sarvam-105b","object":"chat.completion.chunk","system_fingerprint":"vllm-0.29.1rc1.dev145+gfe61f3317-tp2-1c00f7c7","usage":{"completion_tokens":2559,"prompt_tokens":2990,"total_tokens":5549,"completion_tokens_details":{"reasoning_tokens":2411}}}
+
+data: [DONE]
+

@@ -26,6 +26,7 @@ A web-based AI presentation builder: prompt → AI plans and populates a 16:9 de
 | D13 | Text model | Paragraph/bullet arrays with per-element style, `contentEditable` on double-click | Keeps editor and AI edits simple; no rich-text library |
 | D14 | Workflow | Work locally; unit tests and deployment deferred to stage 9 | User choice. Each stage until then is verified by the user's manual checklist |
 | D15 | Local TLS | Node runs with the system CA store (`--use-system-ca` on the spike script; `NODE_USE_SYSTEM_CA=1` in the shell for `next dev`) | Zscaler intercepts HTTPS on the dev machine; Node's bundled CA list rejects it. Harmless elsewhere |
+| D16 | Where generation starts (S5-a/S5-b) | The app opens on an empty deck with a "Create a presentation" prompt box; the stage 1 sample deck is one click away. A prompt sent while the deck has no slides generates (from the canvas box or the chat); otherwise it is an edit. A header **New deck** button clears the deck in one undo step. No intent classifier — the edit prompt tells the model to point users at New deck | The reviewer's first step is "prompt a deck", so starting on the sample deck would make that an edit. Slide-count routing is deterministic, free, and undoable; a classifier costs a request and misroutes "make a slide about…". Loading the sample deck is the one exception to `applyOps`: it calls `replaceDeck` and clears undo history, a temporary regression/demo reset kept until persistence lands in stage 8 |
 
 ## 3. Schema
 
@@ -92,8 +93,10 @@ Rules:
 ## 5. Agent
 
 ### 5.1 Proxy route — `app/api/chat/route.ts`
-- Input: `{ mode: 'plan' | 'populate' | 'edit', messages, deckSnapshot, slideId? }`.
-- Server attaches system prompt for the mode, tool definitions (from zod), model id, `reasoning_effort: "low"` (sarvam-105b defaults to medium and can spend the whole output budget reasoning), `max_tokens: 3000`, `stream: true`.
+- Input: `{ mode: 'plan' | 'populate' | 'edit', messages, deckSnapshot }`. There is no `slideId`: the populate snapshot marks the target slide with `<- the slide you fill`, and the client enforces the scope.
+- Server attaches system prompt for the mode, tool definitions (from zod), model id, `reasoning_effort: "low"` (sarvam-105b defaults to medium and can spend the whole output budget reasoning), `max_tokens: 3000` for every mode (the cap only limits; tokens are billed as used), `stream: true`.
+- `tool_choice` per mode: plan sends the named `{ type: 'function', function: { name: 'plan_deck' } }`, populate sends `"required"`, edit sends `"auto"`. The stage 5 Task 2 probe tried both forced forms against Sarvam: the named choice returned HTTP 200 with a `plan_deck` call and arguments, and `"required"` did too, so the named form is used for plan with no fallback needed.
+- Forcing a tool call is not a guarantee of a *structured* one. Sarvam sometimes answers with the tool call written into the message content as `<tool_call>name<arg_key>…</arg_key><arg_value>…</arg_value></tool_call>`; the client recovers those (section 5.2).
 - Guards: per-IP rate limit (40/min, 400/day, in-memory per instance, counted before parsing; one agent reply makes 2–4 requests), 200 KB body limit, zod-validated body with no `system` role, mode-allowed tool subset.
 - Key: `SARVAM_API_KEY` from `process.env` only. `.env.local` git-ignored; `.env.example` committed.
 - Streams Sarvam SSE through to the client unchanged.
@@ -106,9 +109,25 @@ Rules:
 5. Append `role: tool` results; loop with a fresh snapshot.
 6. Stop when the model replies without tool calls or the cap is hit. A Stop button aborts; applied ops stay and are undoable as one step.
 
-### 5.3 Two-phase generation (empty deck or "new deck" intent)
-- **Plan:** `tool_choice` forces one `plan_deck({ title, theme, slides: [{ title, layout, intent }] })`. Skeleton slides appear in the filmstrip immediately.
-- **Populate:** one request per slide (`mode: 'populate'`, tools restricted to element/chart/table tools on that slide). Concurrency 2. Slides fill progressively.
+Tagged tool calls: if a turn ends with no structured `tool_calls` but its content holds `<tool_call>…</tool_call>` blocks, the SSE accumulator parses them into real tool calls, hides the tags from the chat text, and feeds the arguments through the same streaming callbacks, so a streamed plan still builds the outline slide by slide. Without this, a complete and already-paid-for reply is thrown away: it cost one wasted plan call and two of six populate calls in the stage 5 recording session.
+
+### 5.3 Two-phase generation (empty deck)
+
+**Plan (S5-c to S5-e2)**
+- One forced `plan_deck({ title, slides: [{ title, layout, intent, visual }] })`, 3–10 slides. `layout` is any layout but `blank`; `visual` is `chart`, `table`, `image`, or `none`, so populate never has to guess the visual. `theme` is omitted (one theme in v1). The prompt asks for at least one chart and one table in decks of 5+ slides.
+- While the call streams, the client re-scans the partial arguments on every delta. Each slide object that has closed and validates against the slide schema is added to the deck immediately (`add_slide` + title box, same `txnId`), so slides appear in the filmstrip one by one; the title still being written shows as a shimmering ghost after them. When the call ends, `plan_deck` runs as a normal tool: it sets the deck title and adds only the slides not already present.
+- Partial outlines are kept. If the final arguments are invalid or the stream breaks, the slides already added stay and are filled, and an error notice discloses it ("The outline was incomplete (…). Filling the N slides that arrived." / "The outline broke off after N slides (…)"). The run fails only when no slide arrived at all. Stopping mid-outline keeps the slides so far, sets the deck title from slide 1, and leaves the rest as "Fill with AI".
+- The **title slide** (slide 1, layout `title`) starts filling the moment it is added, while the plan is still streaming, with only the partial outline as context — a subtitle doesn't depend on the rest of the deck. Every other slide waits for the outline to complete.
+- How progressive this looks depends on Sarvam. The client is driven by argument deltas, so when the model streams token by token the outline grows one slide at a time, but sarvam-105b sometimes emits the whole `slides` array in a single delta, and then the slides land together. Both behaviours are in the recorded fixtures.
+
+**Populate (S5-f to S5-j)**
+- One request per slide, two at a time (so at most three streams briefly, while the title slide is still filling). Tools are the subset `add_element`, `update_element`, `add_chart`, `update_chart_data`, `add_table`, `update_table`, with `tool_choice: "required"`. The client rejects any call that targets another slide or an element on another slide. The snapshot is the whole outline (titles + intents) plus the full contents of the target slide, marked `<- the slide you fill`.
+- When every call in the first round succeeds, the slide is done with no follow-up request; otherwise up to 3 rounds to fix tool errors. If a round returns no tool call at all, one slide-specific nudge ("Slide N (sID) …: you did not make a tool call…") is sent inside the same 3-round cap; the nudge text starts with the slide number and id so each retry gets its own replay fixture name.
+- Populate never passes `box`. After each successful call a pure helper arranges the slide's non-title elements by layout: `title`/`section` stack under the hero title with centered subtitles; `chart-forward` puts chart and text side by side at 2:1; otherwise up to 3 equal columns (text first, then visuals), 4+ into a 2-row grid. Edit mode keeps the stage 4 `placeBox`.
+- The canvas jumps to slide 1 as soon as it is added and then stays put: populate pulses touched elements and thumbnails but does not follow them, so the canvas doesn't bounce between the two slides filling at once.
+- Per-slide status is queued, writing, done, failed, or not filled (after Stop). Empty queued/writing slides show a shimmering skeleton shaped like the planned layout on canvas and thumbnail; a slide that already has content shows a "Writing…" badge. Failed slides offer **Retry** and stopped ones **Fill with AI**, both on the canvas strip and in the chat progress list, with an amber (failed) or gray (not filled) thumbnail dot.
+- The chat shows one live progress item (outline while planning, then a row per slide) instead of a receipt per tool call, and a closing sentence written locally with no extra request.
+- The whole generation shares one `txnId`, so a single ⌘Z empties the deck and brings the prompt box back, and ⌘⇧Z restores it. A later single-slide Retry or "Fill with AI" is its own one-step transaction.
 
 ### 5.4 Edit mode
 - Full slide/element/chart/table tool set. System prompt: never recreate existing content; reference ids; preserve boxes of elements not mentioned; delete only when asked; fill a slide in the same reply that adds it; make each change once.
@@ -125,7 +144,9 @@ Rules:
 - AI images: `https://picsum.photos/seed/<keyword>/800/600` with descriptive alt text.
 
 ### 5.6 Dev replay
-- Server-side, in the proxy route. `AGENT_RECORD=1` tees each upstream stream into `fixtures/agent/<prompt-slug>.step<N>.sse` (reasoning-only events dropped). `AGENT_REPLAY=1` serves the matching fixture, one event per 30 ms, without calling Sarvam or needing a key; an unknown prompt gets a "No recording named …" reply. Neither runs in production.
+- Server-side, in the proxy route. `AGENT_RECORD=1` tees each upstream stream into `fixtures/agent/<prefix><prompt-slug>.step<N>.sse` (reasoning-only events dropped). `AGENT_REPLAY=1` serves the matching fixture, one event per 30 ms, without calling Sarvam or needing a key; an unknown prompt gets a "No recording named …" reply. Neither runs in production.
+- The prefix is the mode: `plan-` and `populate-`; edit fixtures keep their stage 4 names. A populate slug comes from the per-slide instruction, so it carries the slide number, slide id, and planned title — one fixture per slide, plus one more per nudge retry.
+- Fresh-reload caveat: generation fixtures only replay after a full page reload, because slide ids are drawn from `deck.nextId` and only start at `s1` on a newly loaded empty deck. Clicking New deck and generating again produces `s13`, `s15`, … and the populate slugs no longer match, so those requests fall through to the "No recording named …" reply and the slides show as failed.
 
 ## 6. Canvas & drag-and-drop
 
@@ -142,7 +163,8 @@ Rules:
 
 ## 7. Error, empty, and loading states
 
-- Zero slides: empty canvas state with a prompt box and "Add blank slide".
+- Zero slides: the canvas shows "Create a presentation" with a prompt box, three example chips that fill the box when clicked, a Generate deck button, and two escape hatches — "start with a blank slide" and "load the sample deck". The chat says the same thing and its input placeholder reads "Describe the presentation you want…". New deck is disabled while the deck is empty.
+- New deck is a normal undoable transaction, but it moves keyboard focus into the empty prompt box, where ⌘Z belongs to the textarea and the editor shortcut is skipped. The header Undo button restores the deck, as does ⌘Z once focus leaves the textarea; its tooltip spells this out. Accepted as-is.
 - Chat: empty state with example prompts; streaming indicator; per-tool receipts; inline error with Retry for network/429/5xx; clear message when rate-limited or credits exhausted.
 - Tool errors are returned to the model (not shown as crashes); repeated failures stop at the step cap with a visible note.
 - Persistence load failure (schema mismatch) → start fresh, keep raw copy under a backup key.
