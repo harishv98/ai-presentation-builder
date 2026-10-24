@@ -77,7 +77,7 @@ Rules:
 ## 4. Store, operations, history
 
 - `useDeckStore` (Zustand): `{ deck, history: { past: Txn[], future: Txn[] } }`.
-- `useUiStore` (Zustand): current slide, selection, drag preview, AI highlights, editing element id, chat state. Never in history.
+- `useUiStore` (Zustand): current slide, selection, drag preview, AI highlights, editing (text element or table cell), right-panel tab, chat state. Never in history.
 - `applyOps(ops, meta: { source: 'user' | 'ai'; label: string; txnId?: string }): OpResult[]` is the **only** deck writer.
   - Runs under Immer `produceWithPatches`.
   - Validates ids/payloads; invalid op → `{ ok: false, error }` (never throws). Error text is fed back to the model.
@@ -133,6 +133,7 @@ Tagged tool calls: if a turn ends with no structured `tool_calls` but its conten
 - Full slide/element/chart/table tool set. System prompt: never recreate existing content; reference ids; preserve boxes of elements not mentioned; delete only when asked; fill a slide in the same reply that adds it; make each change once.
 - Loop safeguards (sarvam-105b otherwise re-applies the same edit until the step cap): tool results carry `applied` and `previously` (the element before the edit); the snapshot marks elements and slides `(added by you this reply)` / `(edited by you this reply)`; a call identical to one that already succeeded is skipped, and a step of only repeats ends the reply. A reply that ends with no text shows a notice instead (a distinct one when the model hit `max_tokens`).
 - Revert support: chat history keeps only reply text, so the snapshot ends with "Changes from your earlier replies" (last 3 turns, each change with its before-state). "Revert it back" restores that state with the update tools.
+- While the user edits an element, tool calls that target it (or delete its slide) fail with "The user is editing eN right now…" and the canvas doesn't follow the AI.
 
 ### 5.5 Tools
 - Slides: `add_slide`, `update_slide`, `delete_slide`, `reorder_slides`, `duplicate_slide`, `change_layout`
@@ -152,13 +153,13 @@ Tagged tool calls: if a turn ends with no structured `tool_calls` but its conten
 
 - `<SlideRenderer slideId scale interactive>` is shared by canvas, thumbnails, and print. 1600×900 div, `transform: scale(s)`, elements absolutely positioned. Thumbnails: non-interactive, no chart animation, memoized element renderers.
 - Selection: click, shift-click, marquee on empty canvas. Overlay draws bounding box + 8 handles.
-- Editing: double-click text → `contentEditable` (drag suspended), commit on blur. Double-click table cell → edit cell. Charts edited in a side inspector (data grid, type, legend, axis labels).
+- Editing: double-click text (or Enter) → a `contentEditable` overlay styled like the element, with the element hidden underneath. Plain-text paste, one block per paragraph/bullet, grows the box on commit, one undo step. Double-click a table cell → an input over the cell, with Enter moving down, Tab/Shift+Tab moving across, and Tab in the last cell adding a row; one undo step per table session. Charts (data, type, legend, axes), table rows and columns (at the bottom/right), and image replacement live in the Format tab next to Chat. Its fields apply live, one undo step per focused field.
 - In-slide move: pointer capture; `delta / scale` → logical units; pure `snap(moving, others, artboard)` returns snapped box + guides (edges/centers, ~6 screen-px threshold, optional 20-unit grid); group bbox for multi-select; commit on pointer-up; Escape cancels.
 - Resize: same pipeline; handle determines edges; Shift keeps aspect; minimum size.
 - Cross-slide: leaving the artboard shows a `position: fixed` ghost in a portal; `document.elementsFromPoint` finds `[data-drop-slide-id]` thumbnails; target shows ring + "Move/Copy to slide N"; Alt = copy (new id); drop commits `move_element({ id, toSlideId, copy })` keeping x/y (clamped); drop elsewhere or Escape cancels. Context-menu "Move to slide…" as a supplementary path.
 - Filmstrip: `dnd-kit` sortable, vertical, insertion line. Element drags only use thumbnails as hit-test targets, so the two systems never compete.
 - Keyboard (disabled while editing text): Delete/Backspace, ⌘D, ⌘Z / ⌘⇧Z, arrows nudge 1 (Shift 20), PageUp/PageDown or arrows with no selection switch slides, ⌘] / ⌘[ z-order.
-- Insert toolbar: text, image (file picker → data URL), chart (sample bar), table (3×3), shape. Inserted centered, default size, auto-selected.
+- Insert toolbar above the canvas: text, image (file picker; downscaled to 1600 px and stored as a data URL), chart (sample bar), table (3×3), rectangle, ellipse, line. Inserted centered (offset 20/20 if that spot is taken), default size, auto-selected. Replace image in the Format tab.
 - Export: `/print` renders all slides at 1600×900 with `@page { size: 1600px 900px }` and page breaks, then calls `window.print()`.
 
 ## 7. Error, empty, and loading states
