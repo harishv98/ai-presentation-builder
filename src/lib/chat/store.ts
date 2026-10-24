@@ -5,7 +5,8 @@ export type ChatItem =
   | { id: string; kind: "user"; text: string }
   | { id: string; kind: "assistant"; text: string }
   | { id: string; kind: "tool"; ok: boolean; summary: string }
-  | { id: string; kind: "notice"; tone: "info" | "error"; text: string; retryPrompt?: string };
+  | { id: string; kind: "notice"; tone: "info" | "error"; text: string; retryPrompt?: string }
+  | { id: string; kind: "generation"; runId: number };
 
 type WithoutId<T> = T extends unknown ? Omit<T, "id"> : never;
 export type NewChatItem = WithoutId<ChatItem>;
@@ -52,3 +53,7 @@ export const useChatStore = create<ChatState>()((set) => ({
 }));
 
 export const selectRunning = (s: ChatState) => s.abort !== null;
+
+export function pushNotice(tone: "info" | "error", text: string, retryPrompt?: string): void {
+  useChatStore.getState().pushItem({ kind: "notice", tone, text, ...(retryPrompt && { retryPrompt }) });
+}

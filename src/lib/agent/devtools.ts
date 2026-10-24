@@ -1,6 +1,7 @@
 import { useDeckStore } from "@/lib/deck/store";
 import { resolveCurrentSlideId, useUiStore } from "@/lib/ui/store";
 import { executeToolCall } from "./executeTool";
+import { fillSlide, generateDeck } from "./generateDeck";
 import { revealAiChanges } from "./reveal";
 import { runAgent, stopAgent } from "./runAgent";
 import { serializeForAI } from "./snapshot";
@@ -18,7 +19,15 @@ function run(name: string, args: unknown) {
   return execution;
 }
 
-const agentDevtools = { snapshot, run, ask: runAgent, stop: stopAgent, definitions: () => toOpenAiTools() };
+const agentDevtools = {
+  snapshot,
+  run,
+  ask: runAgent,
+  generate: generateDeck,
+  fill: fillSlide,
+  stop: stopAgent,
+  definitions: () => toOpenAiTools(),
+};
 
 declare global {
   interface Window {

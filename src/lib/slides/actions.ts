@@ -1,5 +1,6 @@
 import { createSampleDeck } from "@/lib/deck/fixture";
 import { useDeckStore } from "@/lib/deck/store";
+import { resetGeneration } from "@/lib/generation/store";
 import { resolveCurrentSlideId, useUiStore } from "@/lib/ui/store";
 
 export type NewSlidePosition = "after-current" | "end";
@@ -70,10 +71,12 @@ export function startNewDeck(): void {
     ],
     { source: "user", label: "New deck" },
   );
+  resetGeneration();
   requestAnimationFrame(() => document.getElementById("deck-prompt")?.focus());
 }
 
 export function loadSampleDeck(): void {
   useDeckStore.getState().replaceDeck(createSampleDeck());
+  resetGeneration();
   useUiStore.setState({ currentSlideId: null, selectedIds: [] });
 }

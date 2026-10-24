@@ -74,3 +74,20 @@ function clipParagraphs(content: string[]): string[] {
   }
   return out;
 }
+
+export function serializeForPopulate(deck: Deck, slideId: string, outline: Record<string, { intent: string }>): string {
+  const lines = [`Deck "${deck.title}", ${deck.slideOrder.length} slides, artboard 1600x900`];
+  deck.slideOrder.forEach((id, index) => {
+    const slide = deck.slides[id];
+    if (!slide) return;
+    const intent = outline[id] ? ` - ${clip(outline[id].intent, 200)}` : "";
+    const target = id === slideId ? "  <- the slide you fill" : "";
+    lines.push(`[${index + 1}] ${id} ${JSON.stringify(slide.title)} layout=${slide.layout}${intent}${target}`);
+  });
+  lines.push("", `Slide ${slideId} contains (back to front):`);
+  for (const id of deck.slides[slideId]?.elementOrder ?? []) {
+    const element = deck.elements[id];
+    if (element) lines.push(`  ${describeElement(element)}`);
+  }
+  return lines.join("\n");
+}

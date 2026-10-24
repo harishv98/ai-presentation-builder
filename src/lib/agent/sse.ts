@@ -38,10 +38,13 @@ function parseDataLine(line: string): unknown {
   }
 }
 
-export function createTurnAccumulator(
-  step: number,
-  events: { onText: (delta: string) => void; onToolCall: (call: ToolCall) => void },
-) {
+export type TurnEvents = {
+  onText?: (delta: string) => void;
+  onToolCall: (call: ToolCall) => void;
+  onToolArgs?: (args: string, index: number) => void;
+};
+
+export function createTurnAccumulator(step: number, events: TurnEvents) {
   let text = "";
   let usage: unknown;
   let finishReason: string | null = null;
@@ -67,7 +70,7 @@ export function createTurnAccumulator(
       if (!delta) return;
       if (delta.content) {
         text += delta.content;
-        events.onText(delta.content);
+        events.onText?.(delta.content);
       }
       for (const part of delta.tool_calls ?? []) {
         const index = part.index ?? (part.id || open === -1 ? calls.length : open);
@@ -78,7 +81,10 @@ export function createTurnAccumulator(
         const call = (calls[index] ??= { id: "", type: "function", function: { name: "", arguments: "" } });
         if (part.id) call.id = part.id;
         if (part.function?.name) call.function.name += part.function.name;
-        if (part.function?.arguments) call.function.arguments += part.function.arguments;
+        if (part.function?.arguments) {
+          call.function.arguments += part.function.arguments;
+          events.onToolArgs?.(call.function.arguments, index);
+        }
       }
     },
     finish() {
