@@ -14,8 +14,39 @@ Rules:
 - To undo or revert an earlier change, restore the "before" state listed under "Changes from your earlier replies" with the update tools.
 - If a tool returns an error, fix the arguments and retry, or explain the problem.
 - If the request is ambiguous, ask one short question instead of calling tools.
+- If the user asks for a brand-new deck on another topic, don't rebuild this one: tell them to click "New deck" at the top and describe it there.
 - As soon as the request is satisfied, stop calling tools and reply with one short sentence saying what you changed. Do not mention ids.
 
 Current deck (elements listed back to front; refreshed after every tool round):
+${snapshot}`;
+}
+
+export function planSystemPrompt(): string {
+  return `You plan slide decks. Call plan_deck exactly once with the deck title and every slide in order. Do not write slide content; each slide is filled in later from its intent.
+
+Rules:
+- Use the number of slides the user asks for; otherwise 5 to 7. If the user gives an outline, follow it.
+- Slide 1 uses layout "title". Use "section" only to separate parts of decks longer than 8 slides. Use "chart-forward" for slides built around numbers, "comparison" for side-by-side options, "two-column" for text next to a picture or two lists, and "content" otherwise.
+- visual: "chart" for numbers or trends, "table" for structured comparisons or specs, "image" when a photo helps, "none" for text only. Decks of 5 or more slides include at least one chart and one table unless the user says otherwise.
+- intent: one or two sentences with the slide's key points, specific to the user's topic. For a chart, name the categories and series; for a table, name the columns and rows.
+- Titles are short (at most 8 words) and specific.`;
+}
+
+export function populateSystemPrompt(snapshot: string): string {
+  return `You fill one slide of a deck that has already been outlined. You change the deck only by calling tools, and only on the slide marked "<- the slide you fill".
+
+Rules:
+- The slide already has its title text box. Do not add another title or change it.
+- Add the slide's content in one round of tool calls: usually one text element plus the planned visual, at most three elements. If the slide already has some content, add only what is missing.
+- Never pass box; the editor lays the slide out.
+- Bullets: 3 to 5 items of at most 12 words each. Body text: at most 2 sentences.
+- By layout: title → one subtitle line (role "subtitle"), nothing else; section → one subtitle line; two-column → two bullet lists, or bullets plus an image; comparison → a table, or two bullet lists; chart-forward → the chart plus a short takeaway text; content → bullets plus the planned visual, if any.
+- Charts: 3 to 8 categories, 1 to 3 series, exactly one number per category in each series. Use realistic numbers for the topic, a title, and axis labels.
+- Tables: a header row plus 2 to 6 rows, 2 to 5 columns, short cells.
+- Images: add_element with type "image", a 1-3 word photo keyword, and alt text describing the photo.
+- Keep the tone and facts consistent with the rest of the outline, and do not repeat other slides' content.
+- If a tool returns an error, fix the arguments and call it again. Do not reply with text.
+
+Deck outline and the slide to fill:
 ${snapshot}`;
 }

@@ -5,6 +5,9 @@ export const MAX_BODY_BYTES = 200_000;
 export const HISTORY_MESSAGES = 6;
 export const MAX_PROMPT_CHARS = 4000;
 
+export const AGENT_MODES = ["plan", "populate", "edit"] as const;
+export type AgentMode = (typeof AGENT_MODES)[number];
+
 const ToolCallSchema = z.object({
   id: z.string(),
   type: z.literal("function"),
@@ -18,7 +21,7 @@ export const ChatMessageSchema = z.discriminatedUnion("role", [
 ]);
 
 export const ChatRequestSchema = z.object({
-  mode: z.literal("edit"),
+  mode: z.enum(AGENT_MODES),
   messages: z.array(ChatMessageSchema).min(1).max(200),
   deckSnapshot: z.string().max(150_000),
 });

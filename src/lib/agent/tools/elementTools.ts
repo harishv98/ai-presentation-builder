@@ -54,8 +54,10 @@ function buildElement(deck: Deck, args: z.infer<typeof addElementArgs>): NewElem
     case "text": {
       if (!args.text) return "text is required when type is text";
       const { role, content, style } = args.text;
+      const layout = deck.slides[args.slideId]?.layout;
+      const centered = role !== "title" && (layout === "title" || layout === "section") ? { align: "center" as const } : {};
       const box = args.box ?? placeBox(deck, args.slideId, role === "title" ? "title" : "body");
-      return { type: "text", box, text: { role, content, style: textStyle(role, style) } };
+      return { type: "text", box, text: { role, content, style: textStyle(role, { ...centered, ...style }) } };
     }
     case "image": {
       if (!args.image) return "image is required when type is image";

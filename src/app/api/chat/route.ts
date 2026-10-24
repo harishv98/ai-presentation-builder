@@ -23,7 +23,7 @@ export async function POST(request: Request): Promise<Response> {
   const parsed = ChatRequestSchema.safeParse(json);
   if (!parsed.success) return errorResponse(400, { code: "bad_request", error: z.prettifyError(parsed.error) });
 
-  const name = fixtureName(parsed.data.messages);
+  const name = fixtureName(parsed.data.mode, parsed.data.messages);
   if (replayEnabled()) return replayResponse(name);
 
   const apiKey = process.env.SARVAM_API_KEY;

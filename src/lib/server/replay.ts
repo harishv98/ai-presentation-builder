@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { ChatMessage } from "@/lib/agent/protocol";
+import type { AgentMode, ChatMessage } from "@/lib/agent/protocol";
 
 const FIXTURE_DIR = path.join(process.cwd(), "fixtures", "agent");
 const DRIP_MS = 30;
@@ -10,7 +10,7 @@ export const SSE_HEADERS = { "content-type": "text/event-stream; charset=utf-8",
 export const replayEnabled = () => process.env.AGENT_REPLAY === "1";
 export const recordEnabled = () => process.env.AGENT_RECORD === "1" && process.env.NODE_ENV !== "production";
 
-export function fixtureName(messages: ChatMessage[]): string {
+export function fixtureName(mode: AgentMode, messages: ChatMessage[]): string {
   const lastUser = messages.findLastIndex((m) => m.role === "user");
   const prompt = lastUser === -1 ? "" : (messages[lastUser]?.content ?? "");
   const step = messages.slice(lastUser + 1).filter((m) => m.role === "assistant").length;
@@ -20,7 +20,8 @@ export function fixtureName(messages: ChatMessage[]): string {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "")
       .slice(0, 60) || "empty";
-  return `${slug}.step${step}.sse`;
+  const prefix = mode === "edit" ? "" : `${mode}-`;
+  return `${prefix}${slug}.step${step}.sse`;
 }
 
 export async function replayResponse(name: string): Promise<Response> {
