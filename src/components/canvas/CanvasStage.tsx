@@ -48,8 +48,9 @@ export function CanvasStage({ slideId }: { slideId: string }) {
 }
 
 function onDoubleClick(event: MouseEvent<HTMLDivElement>) {
-  const target = event.target as HTMLElement;
-  if (target.closest("[data-editor]")) return;
+  // Pointer capture from the gesture hook retargets dblclick to the stage itself.
+  const target = document.elementFromPoint(event.clientX, event.clientY);
+  if (!target || target.closest("[data-editor]")) return;
   const elementId = target.closest<HTMLElement>("[data-element-id]")?.dataset.elementId;
   if (!elementId) return;
   const cell = target.closest<HTMLElement>("[data-cell]")?.dataset.cell?.split(":").map(Number);
