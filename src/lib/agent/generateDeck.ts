@@ -99,6 +99,7 @@ async function planOutline(prompt: string, txn: TxnRef, signal: AbortSignal, onS
   };
 
   let truncated = false;
+  let broke = false;
   try {
     const result = await streamStep(
       { mode: "plan", messages: [{ role: "user", content: prompt }], deckSnapshot: "" },
@@ -136,6 +137,7 @@ async function planOutline(prompt: string, txn: TxnRef, signal: AbortSignal, onS
     truncated = result.truncated;
   } catch (error) {
     if (signal.aborted || slideIds.length === 0) throw error;
+    broke = true;
     pushNotice("error", `The outline broke off after ${slideIds.length} slides (${describeError(error)}). Filling those.`);
   } finally {
     setNextTitle(null);
@@ -146,6 +148,9 @@ async function planOutline(prompt: string, txn: TxnRef, signal: AbortSignal, onS
   if (slideIds.length === 0) {
     if (planError) throw new Error(`The outline was invalid: ${clip(planError, 300)}`);
     throw new Error(truncated ? "The AI ran out of room while planning. Try a shorter request." : "The AI didn't return an outline. Try again.");
+  }
+  if (planError && !broke && !signal.aborted) {
+    pushNotice("error", `The outline was incomplete (${clip(planError, 200)}). Filling the ${slideIds.length} slides that arrived.`);
   }
   return slideIds;
 }

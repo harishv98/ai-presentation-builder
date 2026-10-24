@@ -9,6 +9,7 @@ import { serializeForPopulate } from "./snapshot";
 import type { PlannedSlide } from "./tools/planTool";
 
 const POPULATE_MAX_STEPS = 3;
+const NUDGE = "You did not make a tool call. Respond with real tool calls only (no text, no tags) that add this slide's content.";
 
 export type TxnRef = { txnId: string; label: string };
 
@@ -18,6 +19,7 @@ export async function populateSlide(slideId: string, txn: TxnRef, signal: AbortS
   setSlideFill(slideId, { status: "filling" });
   const turn: ChatMessage[] = [{ role: "user", content: instruction(slideId, planned) }];
   let lastError = "";
+  let nudged = false;
 
   try {
     for (let step = 0; step < POPULATE_MAX_STEPS; step++) {
@@ -44,8 +46,11 @@ export async function populateSlide(slideId: string, txn: TxnRef, signal: AbortS
       });
       for (const execution of executions) turn.push({ role: "tool", tool_call_id: execution.callId, content: execution.content });
       if (executions.length === 0) {
-        if (result.truncated) lastError = "The AI ran out of room while thinking";
-        break;
+        lastError = result.truncated ? "The AI ran out of room while thinking" : "The AI made no tool calls";
+        if (nudged) break;
+        nudged = true;
+        turn.push({ role: "user", content: NUDGE });
+        continue;
       }
       if (executions.every((execution) => execution.ok)) break;
     }
