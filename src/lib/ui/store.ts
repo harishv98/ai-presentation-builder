@@ -4,6 +4,15 @@ import type { Box, Deck } from "@/lib/deck/schema";
 import { useDeckStore } from "@/lib/deck/store";
 
 export type DragPreview = { boxes: Record<string, Box>; guides: Guide[] };
+export type CrossDrag = {
+  ids: string[];
+  group: Box;
+  scale: number;
+  left: number;
+  top: number;
+  targetSlideId: string | null;
+  copy: boolean;
+};
 export type TextCaret = { x: number; y: number } | "all";
 export type CellEditing = { kind: "cell"; elementId: string; row: number; col: number; txnId: string };
 export type Editing = { kind: "text"; elementId: string; caret: TextCaret } | CellEditing;
@@ -13,6 +22,7 @@ type UiState = {
   currentSlideId: string | null;
   selectedIds: string[];
   dragPreview: DragPreview | null;
+  crossDrag: CrossDrag | null;
   marquee: Box | null;
   draggingSlideId: string | null;
   renamingSlideId: string | null;
@@ -26,6 +36,7 @@ type UiState = {
   toggleSelected: (id: string) => void;
   clearSelection: () => void;
   setDragPreview: (preview: DragPreview | null) => void;
+  setCrossDrag: (drag: CrossDrag | null) => void;
   setMarquee: (box: Box | null) => void;
   setDraggingSlideId: (id: string | null) => void;
   setRenamingSlideId: (id: string | null) => void;
@@ -39,6 +50,7 @@ export const useUiStore = create<UiState>()((set) => ({
   currentSlideId: null,
   selectedIds: [],
   dragPreview: null,
+  crossDrag: null,
   marquee: null,
   draggingSlideId: null,
   renamingSlideId: null,
@@ -55,6 +67,7 @@ export const useUiStore = create<UiState>()((set) => ({
     })),
   clearSelection: () => set((s) => (s.selectedIds.length === 0 ? s : { selectedIds: [] })),
   setDragPreview: (preview) => set({ dragPreview: preview }),
+  setCrossDrag: (drag) => set({ crossDrag: drag }),
   setMarquee: (box) => set({ marquee: box }),
   setDraggingSlideId: (id) => set({ draggingSlideId: id }),
   setRenamingSlideId: (id) => set({ renamingSlideId: id }),

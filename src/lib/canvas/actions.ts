@@ -86,6 +86,25 @@ export function duplicateSelection(): void {
   useUiStore.getState().setSelection(results.flatMap((r) => (r.ok && r.id ? [r.id] : [])));
 }
 
+export function moveElementsToSlide(ids: string[], toSlideId: string, copy: boolean): void {
+  const { deck, applyOps } = useDeckStore.getState();
+  const number = deck.slideOrder.indexOf(toSlideId) + 1;
+  const results = applyOps(
+    ids.map((id): Op => ({ op: "move_element", id, toSlideId, copy })),
+    { source: "user", label: `${countLabel(copy ? "Copy" : "Move", ids.length)} to slide ${number}` },
+  );
+  const landed = results.flatMap((r) => (r.ok && r.id ? [r.id] : []));
+  if (landed.length === 0) return;
+  const ui = useUiStore.getState();
+  ui.goToSlide(toSlideId);
+  ui.setSelection(landed);
+}
+
+export function moveSelectionToSlide(toSlideId: string): void {
+  const selection = currentSelection();
+  if (selection) moveElementsToSlide(selection.ids, toSlideId, false);
+}
+
 let lastNudge = { txnId: "", at: 0 };
 
 export function nudgeSelection(dx: number, dy: number): void {

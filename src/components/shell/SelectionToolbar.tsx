@@ -1,7 +1,9 @@
 "use client";
 
-import { deleteSelection, duplicateSelection, reorderSelection } from "@/lib/canvas/actions";
+import { deleteSelection, duplicateSelection, moveSelectionToSlide, reorderSelection } from "@/lib/canvas/actions";
+import { useDeckStore } from "@/lib/deck/store";
 import { useUiStore } from "@/lib/ui/store";
+import { useCurrentSlideId } from "@/lib/ui/useCurrentSlideId";
 import { useSelectedIds } from "@/lib/ui/useSelectedIds";
 
 const buttonClass = "rounded px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-100";
@@ -35,6 +37,7 @@ export function SelectionToolbar() {
       <button type="button" className={buttonClass} title="Send to back (⌘⇧[)" onClick={() => reorderSelection("back")}>
         Back
       </button>
+      <MoveToSlide />
       <button type="button" className={buttonClass} title="Duplicate (⌘D)" onClick={duplicateSelection}>
         Duplicate
       </button>
@@ -42,5 +45,32 @@ export function SelectionToolbar() {
         Delete
       </button>
     </div>
+  );
+}
+
+function MoveToSlide() {
+  const currentSlideId = useCurrentSlideId();
+  const slideOrder = useDeckStore((s) => s.deck.slideOrder);
+  const slides = useDeckStore((s) => s.deck.slides);
+  if (slideOrder.length < 2) return null;
+  return (
+    <select
+      aria-label="Move the selection to another slide"
+      title="Move to another slide (or drag onto a thumbnail; hold Alt to copy)"
+      value=""
+      onChange={(event) => moveSelectionToSlide(event.target.value)}
+      className={buttonClass}
+    >
+      <option value="" disabled>
+        Move to…
+      </option>
+      {slideOrder.map((id, index) =>
+        id === currentSlideId ? null : (
+          <option key={id} value={id}>
+            {index + 1}. {slides[id]?.title || "Untitled"}
+          </option>
+        ),
+      )}
+    </select>
   );
 }
