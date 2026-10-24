@@ -6,6 +6,7 @@ import { Filmstrip } from "@/components/filmstrip/Filmstrip";
 import { FilmstripToolbar } from "@/components/filmstrip/FilmstripToolbar";
 import { EmptyDeck } from "@/components/generation/EmptyDeck";
 import { PlanningState } from "@/components/generation/PlanningState";
+import { InsertToolbar } from "@/components/insert/InsertToolbar";
 import { selectRunning, useChatStore } from "@/lib/chat/store";
 import { useDeckStore } from "@/lib/deck/store";
 import { useGenerationStore } from "@/lib/generation/store";
@@ -51,7 +52,14 @@ function CanvasArea() {
   const slideId = useCurrentSlideId();
   const planning = useGenerationStore((s) => s.phase === "planning");
   if (!slideId) return planning ? <PlanningState /> : <EmptyDeck />;
-  return <CanvasStage slideId={slideId} />;
+  return (
+    <div className="flex h-full flex-col">
+      <InsertToolbar />
+      <div className="min-h-0 flex-1">
+        <CanvasStage slideId={slideId} />
+      </div>
+    </div>
+  );
 }
 
 function NewDeckButton() {

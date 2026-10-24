@@ -4,6 +4,7 @@ import { useDeckStore } from "@/lib/deck/store";
 import { useSelectedIds } from "@/lib/ui/useSelectedIds";
 import { ChartInspector } from "./ChartInspector";
 import { Hint } from "./fields";
+import { ImageInspector } from "./ImageInspector";
 import { TableInspector } from "./TableInspector";
 
 export function Inspector() {
@@ -20,6 +21,8 @@ export function Inspector() {
       return <TableInspector key={element.id} element={element} />;
     case "chart":
       return <ChartInspector key={element.id} element={element} />;
+    case "image":
+      return <ImageInspector key={element.id} element={element} />;
     default:
       return <Hint>Nothing to format for this element yet.</Hint>;
   }

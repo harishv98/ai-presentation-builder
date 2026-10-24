@@ -3,6 +3,7 @@ import type { ElementPatch } from "@/lib/deck/ops";
 import type { ElementOf, ElementType } from "@/lib/deck/schema";
 import { useDeckStore } from "@/lib/deck/store";
 import { useUiStore } from "@/lib/ui/store";
+import type { PickedImage } from "./image";
 import { deleteColumn, deleteRow, insertColumn, insertRow, setCell, tableSize } from "./tableData";
 
 export type TableEdit = "add-row" | "delete-row" | "add-column" | "delete-column";
@@ -91,4 +92,9 @@ export function editTableStructure(id: string, edit: TableEdit, txnId?: string):
       break;
   }
   editElement(id, patch, TABLE_EDIT_LABEL[edit], txnId);
+}
+
+export function replaceImage(id: string, image: PickedImage): void {
+  if (!getElement(id, "image")) return;
+  editElement(id, { image: { src: image.src, alt: image.alt } }, "Replace image");
 }
