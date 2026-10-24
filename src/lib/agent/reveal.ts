@@ -9,6 +9,6 @@ export function revealAiChanges(ids: string[], { follow = true }: { follow?: boo
   ui.flashAiHighlights([...new Set([...ids, ...slideIds])]);
 
   const target = slideIds.at(-1);
-  const busy = ui.dragPreview || ui.marquee || ui.draggingSlideId || ui.renamingSlideId;
+  const busy = ui.dragPreview || ui.marquee || ui.draggingSlideId || ui.renamingSlideId || ui.editing;
   if (follow && target && !busy) ui.goToSlide(target);
 }

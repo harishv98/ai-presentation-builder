@@ -1,6 +1,7 @@
 import type { Op } from "@/lib/deck/ops";
 import type { Deck } from "@/lib/deck/schema";
 import { useDeckStore } from "@/lib/deck/store";
+import { useUiStore } from "@/lib/ui/store";
 import type { AgentMode, ToolCall } from "./protocol";
 import { describeElement } from "./snapshot";
 import { findTool, type ToolContext } from "./tools";
@@ -32,6 +33,8 @@ export function executeToolCall(call: ToolCall, scope: ToolScope): ToolExecution
 
   const outside = scope.slideId ? outsideSlide(useDeckStore.getState().deck, args, scope.slideId) : null;
   if (outside) return failed(base, outside);
+  const conflict = editingConflict(useDeckStore.getState().deck, call.function.name, args);
+  if (conflict) return failed(base, conflict);
 
   const ctx = aiToolContext(scope);
 
@@ -81,4 +84,13 @@ function outsideSlide(deck: Deck, args: unknown, slideId: string): string | null
   const element = typeof elementId === "string" ? deck.elements[elementId] : undefined;
   if (element && element.slideId !== slideId) return `Only elements on slide ${slideId} can be changed now`;
   return null;
+}
+
+function editingConflict(deck: Deck, name: string, args: unknown): string | null {
+  const editing = useUiStore.getState().editing;
+  if (!editing) return null;
+  const { elementId, slideId } = (args ?? {}) as { elementId?: unknown; slideId?: unknown };
+  const deletesItsSlide = name === "delete_slide" && slideId === deck.elements[editing.elementId]?.slideId;
+  if (elementId !== editing.elementId && !deletesItsSlide) return null;
+  return `The user is editing ${editing.elementId} right now. Leave it as it is and continue with the rest of the request.`;
 }

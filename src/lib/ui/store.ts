@@ -4,6 +4,10 @@ import type { Box, Deck } from "@/lib/deck/schema";
 import { useDeckStore } from "@/lib/deck/store";
 
 export type DragPreview = { boxes: Record<string, Box>; guides: Guide[] };
+export type TextCaret = { x: number; y: number } | "all";
+export type CellEditing = { kind: "cell"; elementId: string; row: number; col: number; txnId: string };
+export type Editing = { kind: "text"; elementId: string; caret: TextCaret } | CellEditing;
+export type RightPanelTab = "chat" | "format";
 
 type UiState = {
   currentSlideId: string | null;
@@ -13,6 +17,10 @@ type UiState = {
   draggingSlideId: string | null;
   renamingSlideId: string | null;
   aiHighlights: Record<string, number>;
+  editing: Editing | null;
+  rightPanel: RightPanelTab;
+  setEditing: (editing: Editing | null) => void;
+  setRightPanel: (tab: RightPanelTab) => void;
   goToSlide: (id: string) => void;
   setSelection: (ids: string[]) => void;
   toggleSelected: (id: string) => void;
@@ -35,6 +43,10 @@ export const useUiStore = create<UiState>()((set) => ({
   draggingSlideId: null,
   renamingSlideId: null,
   aiHighlights: {},
+  editing: null,
+  rightPanel: "chat",
+  setEditing: (editing) => set({ editing }),
+  setRightPanel: (tab) => set({ rightPanel: tab }),
   goToSlide: (id) => set((s) => (s.currentSlideId === id ? s : { currentSlideId: id, selectedIds: [] })),
   setSelection: (ids) => set({ selectedIds: ids }),
   toggleSelected: (id) =>
@@ -82,7 +94,7 @@ useDeckStore.subscribe((state, prev) => {
   const order = state.deck.slideOrder;
   const was = prev.deck.slideOrder.indexOf(currentSlideId);
   const next = order[Math.min(Math.max(was, 0), order.length - 1)] ?? null;
-  useUiStore.setState({ currentSlideId: next, selectedIds: [], renamingSlideId: null });
+  useUiStore.setState({ currentSlideId: next, selectedIds: [], renamingSlideId: null, editing: null });
 });
 
 declare global {

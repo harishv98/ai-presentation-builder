@@ -56,6 +56,11 @@ export function hasSelection(): boolean {
   return currentSelection() !== null;
 }
 
+export function singleSelectedId(): string | null {
+  const selection = currentSelection();
+  return selection?.ids.length === 1 ? selection.ids[0]! : null;
+}
+
 export function deleteSelection(): void {
   const selection = currentSelection();
   if (!selection) return;
