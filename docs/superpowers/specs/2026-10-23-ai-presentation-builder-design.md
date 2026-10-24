@@ -54,7 +54,7 @@ type Box = { x: number; y: number; w: number; h: number };   // logical units, a
 
 type ElementBase = { id: string; slideId: string; box: Box; locked?: false };
 type Element = ElementBase & (
-  | { type: 'text';  text:  { role: 'title' | 'subtitle' | 'body' | 'bullets'; content: string[]; style: TextStyle } }
+  | { type: 'text';  text:  { role: 'title' | 'subtitle' | 'body' | 'bullets' | 'numbered'; content: string[]; style: TextStyle } }
   | { type: 'image'; image: { src: string; alt: string; fit: 'cover' | 'contain' } }
   | { type: 'chart'; chart: { kind: 'bar' | 'line' | 'pie' | 'area' | 'stacked-bar'; title: string;
                               categories: string[]; series: { name: string; data: number[]; color?: string }[];
@@ -153,7 +153,7 @@ Tagged tool calls: if a turn ends with no structured `tool_calls` but its conten
 
 - `<SlideRenderer slideId scale interactive>` is shared by canvas, thumbnails, and print. 1600×900 div, `transform: scale(s)`, elements absolutely positioned. Thumbnails: non-interactive, no chart animation, memoized element renderers.
 - Selection: click, shift-click, marquee on empty canvas. Overlay draws bounding box + 8 handles.
-- Editing: double-click text (or Enter) → a `contentEditable` overlay styled like the element, with the element hidden underneath. Plain-text paste, one block per paragraph/bullet, grows the box on commit, one undo step. Double-click a table cell → an input over the cell, with Enter moving down, Tab/Shift+Tab moving across, and Tab in the last cell adding a row; one undo step per table session. Charts (data, type, legend, axes), table rows and columns (at the bottom/right), and image replacement live in the Format tab next to Chat. Its fields apply live, one undo step per focused field.
+- Editing: double-click text (or Enter) → a `contentEditable` overlay styled like the element, with the element hidden underneath. Plain-text paste, one block per paragraph/bullet, grows the box on commit, one undo step. Double-click a table cell → an input over the cell, with Enter moving down, Tab/Shift+Tab moving across, and Tab in the last cell adding a row; one undo step per table session. Charts (data, type, legend, axes), table rows and columns (at the bottom/right), image replacement, and a text box's list style (paragraph, bullets, numbered) live in the Format tab next to Chat. Its fields apply live, one undo step per focused field. The stage's pointer capture retargets `dblclick` to the stage, so the double-click handler hit-tests with `elementFromPoint` instead of reading `event.target`.
 - In-slide move: pointer capture; `delta / scale` → logical units; pure `snap(moving, others, artboard)` returns snapped box + guides (edges/centers, ~6 screen-px threshold, optional 20-unit grid); group bbox for multi-select; commit on pointer-up; Escape cancels.
 - Resize: same pipeline; handle determines edges; Shift keeps aspect; minimum size.
 - Cross-slide: leaving the artboard shows a `position: fixed` ghost in a portal; `document.elementsFromPoint` finds `[data-drop-slide-id]` thumbnails; target shows ring + "Move/Copy to slide N"; Alt = copy (new id); drop commits `move_element({ id, toSlideId, copy })` keeping x/y (clamped); drop elsewhere or Escape cancels. Context-menu "Move to slide…" as a supplementary path.
