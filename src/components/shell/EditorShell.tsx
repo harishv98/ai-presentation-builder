@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { CANVAS_REGION_ID } from "@/components/canvas/SlideFillOverlay";
 import { Filmstrip } from "@/components/filmstrip/Filmstrip";
@@ -8,6 +9,7 @@ import { EmptyDeck } from "@/components/generation/EmptyDeck";
 import { PlanningState } from "@/components/generation/PlanningState";
 import { InsertToolbar } from "@/components/insert/InsertToolbar";
 import { selectRunning, useChatStore } from "@/lib/chat/store";
+import { restoreDeck } from "@/lib/deck/persist";
 import { useDeckStore } from "@/lib/deck/store";
 import { useGenerationStore } from "@/lib/generation/store";
 import { startNewDeck } from "@/lib/slides/actions";
@@ -18,6 +20,7 @@ import { useEditorShortcuts } from "./useEditorShortcuts";
 import "@/lib/agent/devtools";
 
 export function EditorShell() {
+  use(restoreDeck());
   useEditorShortcuts();
   const deckTitle = useDeckStore((s) => s.deck.title);
 
