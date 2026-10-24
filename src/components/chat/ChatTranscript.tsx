@@ -5,6 +5,7 @@ import { GenerationProgress } from "@/components/generation/GenerationProgress";
 import { sendPrompt } from "@/lib/agent/sendPrompt";
 import { selectRunning, useChatStore, type ChatItem } from "@/lib/chat/store";
 import { useDeckStore } from "@/lib/deck/store";
+import { useUiStore } from "@/lib/ui/store";
 
 const EXAMPLES = [
   "Make slide 2 more concise",
@@ -16,11 +17,12 @@ const EXAMPLES = [
 export function ChatTranscript() {
   const items = useChatStore((s) => s.items);
   const running = useChatStore(selectRunning);
+  const visible = useUiStore((s) => s.rightPanel === "chat");
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
-  }, [items, running]);
+  }, [items, running, visible]);
 
   if (items.length === 0) return <EmptyChat />;
 

@@ -2,7 +2,6 @@
 
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { CANVAS_REGION_ID } from "@/components/canvas/SlideFillOverlay";
-import { ChatPanel } from "@/components/chat/ChatPanel";
 import { Filmstrip } from "@/components/filmstrip/Filmstrip";
 import { FilmstripToolbar } from "@/components/filmstrip/FilmstripToolbar";
 import { EmptyDeck } from "@/components/generation/EmptyDeck";
@@ -12,6 +11,7 @@ import { useDeckStore } from "@/lib/deck/store";
 import { useGenerationStore } from "@/lib/generation/store";
 import { startNewDeck } from "@/lib/slides/actions";
 import { useCurrentSlideId } from "@/lib/ui/useCurrentSlideId";
+import { RightPanel } from "./RightPanel";
 import { SelectionToolbar } from "./SelectionToolbar";
 import { useEditorShortcuts } from "./useEditorShortcuts";
 import "@/lib/agent/devtools";
@@ -41,7 +41,7 @@ export function EditorShell() {
           <CanvasArea />
         </main>
 
-        <ChatPanel />
+        <RightPanel />
       </div>
     </div>
   );

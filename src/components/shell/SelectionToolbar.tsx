@@ -1,6 +1,7 @@
 "use client";
 
 import { deleteSelection, duplicateSelection, reorderSelection } from "@/lib/canvas/actions";
+import { useUiStore } from "@/lib/ui/store";
 import { useSelectedIds } from "@/lib/ui/useSelectedIds";
 
 const buttonClass = "rounded px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-100";
@@ -12,6 +13,16 @@ export function SelectionToolbar() {
   return (
     <div className="mr-4 ml-auto flex items-center gap-1">
       <span className="mr-1 text-xs text-zinc-500 tabular-nums">{count} selected</span>
+      {count === 1 && (
+        <button
+          type="button"
+          className={buttonClass}
+          title="Format the selected element"
+          onClick={() => useUiStore.getState().setRightPanel("format")}
+        >
+          Format
+        </button>
+      )}
       <button type="button" className={buttonClass} title="Bring forward (⌘])" onClick={() => reorderSelection("forward")}>
         Forward
       </button>
