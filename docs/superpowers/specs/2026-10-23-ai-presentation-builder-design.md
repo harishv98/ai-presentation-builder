@@ -21,12 +21,12 @@ A web-based AI presentation builder: prompt → AI plans and populates a 16:9 de
 | D8 | Element DnD on canvas | Hand-rolled Pointer Events + pure `snap()` | Full control of scale, snapping, ghost, Escape-cancel, cross-slide hit-testing |
 | D9 | Filmstrip reorder | `dnd-kit` sortable | Solid sortable UX; does not conflict with element drag (different drag origins) |
 | D10 | Charts | Recharts with explicit pixel sizes (no `ResponsiveContainer`) | Real library; prints correctly |
-| D11 | Export | Print-to-PDF route (`/print`) | Spec allows it; stated in README. PPTX out of scope |
+| D11 | Export | Print-to-PDF in the same page: Export PDF button or ⌘P mounts a print-only render of all slides, then `window.print()` (no `/print` route, stage 8) | Spec allows it; stated in README. Prints the live store, so there is no save to wait for and no second page loading from storage. PPTX out of scope |
 | D12 | Nice-to-haves in scope | Persistence (localStorage/IndexedDB), AI-touched element highlight, keyboard nudging | User choice. Others (themes beyond default, present mode, lock, PPTX) out unless time remains |
 | D13 | Text model | Paragraph/bullet arrays with per-element style, `contentEditable` on double-click | Keeps editor and AI edits simple; no rich-text library |
 | D14 | Workflow | Work locally; unit tests and deployment deferred to stage 9 | User choice. Each stage until then is verified by the user's manual checklist |
 | D15 | Local TLS | Node runs with the system CA store (`--use-system-ca` on the spike script; `NODE_USE_SYSTEM_CA=1` in the shell for `next dev`) | Zscaler intercepts HTTPS on the dev machine; Node's bundled CA list rejects it. Harmless elsewhere |
-| D16 | Where generation starts (S5-a/S5-b) | The app opens on an empty deck with a "Create a presentation" prompt box; the stage 1 sample deck is one click away. A prompt sent while the deck has no slides generates (from the canvas box or the chat); otherwise it is an edit. A header **New deck** button clears the deck in one undo step. No intent classifier — the edit prompt tells the model to point users at New deck | The reviewer's first step is "prompt a deck", so starting on the sample deck would make that an edit. Slide-count routing is deterministic, free, and undoable; a classifier costs a request and misroutes "make a slide about…". Loading the sample deck is the one exception to `applyOps`: it calls `replaceDeck` and clears undo history, a temporary regression/demo reset kept until persistence lands in stage 8 |
+| D16 | Where generation starts (S5-a/S5-b) | The app opens on an empty deck with a "Create a presentation" prompt box; the stage 1 sample deck is one click away. A prompt sent while the deck has no slides generates (from the canvas box or the chat); otherwise it is an edit. A header **New deck** button clears the deck in one undo step. No intent classifier — the edit prompt tells the model to point users at New deck | The reviewer's first step is "prompt a deck", so starting on the sample deck would make that an edit. Slide-count routing is deterministic, free, and undoable; a classifier costs a request and misroutes "make a slide about…". Loading the sample deck is the one exception to `applyOps`: it calls `replaceDeck` and clears undo history. Kept after stage 8: it only shows on an empty deck, so all it can overwrite is a deck just cleared with New deck |
 
 ## 3. Schema
 
@@ -87,7 +87,7 @@ Rules:
 - History: `Txn = { id, label, source, patches, inversePatches }`. Same `txnId` merges into one entry (one AI turn = one undo step). Cap 100. Not persisted.
 - Drags/resizes write only `ui.dragPreview` during movement; one transaction is committed on pointer-up. Text edits commit on blur.
 - `serializeForAI(deck)`: compact snapshot (slide id/title/layout/order; element id/type/box/truncated text/chart + table data), rebuilt before every request.
-- Persistence: debounced subscribe → IndexedDB (falls back to localStorage); zod-validated on load.
+- Persistence: debounced (300 ms) subscribe → IndexedDB (raw API, no localStorage fallback; data-URL images can exceed its ~5 MB cap); zod-validated on load before the editor renders. Only the deck is saved. Known gaps: two tabs overwrite each other; an edit made within 300 ms of a refresh can be lost.
 - AI highlight: ops with `source: 'ai'` push touched ids into `ui.aiHighlights` for ~1.5 s; canvas shows a pulse outline.
 
 ## 5. Agent
@@ -160,7 +160,7 @@ Tagged tool calls: if a turn ends with no structured `tool_calls` but its conten
 - Filmstrip: `dnd-kit` sortable, vertical, insertion line. Element drags only use thumbnails as hit-test targets, so the two systems never compete.
 - Keyboard (disabled while editing text): Delete/Backspace, ⌘D, ⌘Z / ⌘⇧Z, arrows nudge 1 (Shift 20), PageUp/PageDown or arrows with no selection switch slides, ⌘] / ⌘[ z-order.
 - Insert toolbar above the canvas: text, image (file picker; downscaled to 1600 px and stored as a data URL), chart (sample bar), table (3×3), rectangle, ellipse, line. Inserted centered (offset 20/20 if that spot is taken), default size, auto-selected. Replace image in the Format tab.
-- Export: `/print` renders all slides at 1600×900 with `@page { size: 1600px 900px }` and page breaks, then calls `window.print()`.
+- Export: Export PDF (or ⌘P) renders all slides at 1600×900 into a print-only portal (render variant `print`, so chart clip-path ids don't collide with thumbnails), waits for images and fonts, and calls `window.print()`. `@page { size: 1600px 900px; margin: 0 }`, one slide per page, `print-color-adjust: exact`.
 
 ## 7. Error, empty, and loading states
 
@@ -189,7 +189,7 @@ Each stage ends with: a running app, a manual test checklist for the user, and a
 | 5. AI generation | `plan_deck` + populate flow, layout helper, progressive streaming; empty/loading/error states | Prompt a 5–7 slide deck with a chart and a table; watch skeletons then fill |
 | 6. Content editing | Inline text editing, table cell editing, chart inspector (data, type, legend, axes), insert toolbar, image upload | Edit chart data, switch type keeps data; insert each element type |
 | 7. Cross-slide DnD | Ghost drag to thumbnail, Alt copy, Escape cancel, clamping, context-menu fallback | Drag a chart onto another thumbnail; ask the AI about "the chart" — it knows the new slide |
-| 8. Persistence + export | IndexedDB autosave, `/print` export | Refresh keeps deck; print preview shows charts at correct positions |
+| 8. Persistence + export | IndexedDB autosave, in-page print-to-PDF export | Refresh keeps deck; print preview shows charts at correct positions |
 | 9. Tests + deploy + README | Vitest unit tests (section 8); Vercel deploy; README (setup, architecture, DnD implementation, known gaps); AI transcripts export | `npm test` green; reviewer walkthrough from `spec.md` "What We Will Try" on the deployed URL |
 
 Rationale for order: the store and canvas are the foundation everything writes to; AI edit mode comes before generation because it exercises the full tool set on known data (cheaper to debug, fewer credits); cross-slide DnD comes after inline editing because it reuses the drag pipeline from stage 2.

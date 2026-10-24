@@ -46,7 +46,7 @@
 
 **Files:** `src/lib/deck/persist.ts` (new), `src/app/page.tsx`, `src/components/shell/EditorShell.tsx`
 
-- [ ] **Step 1: Persistence module.** New `src/lib/deck/persist.ts`:
+- [x] **Step 1: Persistence module.** New `src/lib/deck/persist.ts`:
 
 ```ts
 import { DeckSchema } from "./schema";
@@ -113,7 +113,7 @@ export function restoreDeck(): Promise<void> {
 
 The cached promise makes `restoreDeck()` safe under React StrictMode and re-renders: one load, one subscription. Autosave starts even when loading fails, because a later save may still work (for example after a transient lock).
 
-- [ ] **Step 2: Gate the editor.** In `src/app/page.tsx`, pull the fallback into a constant and wrap the editor in `Suspense`:
+- [x] **Step 2: Gate the editor.** In `src/app/page.tsx`, pull the fallback into a constant and wrap the editor in `Suspense`:
 
 ```tsx
 import { Suspense } from "react";
@@ -135,7 +135,7 @@ export default function Home() {
 
 In `EditorShell`, make `use(restoreDeck());` the first line (before `useEditorShortcuts()`). Imports: `use` from `react`, `restoreDeck` from `@/lib/deck/persist`.
 
-- [ ] **Step 3: Check.** `npm run lint` and `npx tsc --noEmit` pass.
+- [x] **Step 3: Check.** `npm run lint` and `npx tsc --noEmit` pass.
   1. Fresh profile (or DevTools > Application > IndexedDB > delete `ai-presentation-builder`): the app opens on the empty deck as before.
   2. Load the sample deck, move the chart, rename a slide, refresh: everything is still there and Undo is disabled.
   3. Generate a deck (replay mode), refresh: the deck is back. Insert an uploaded image, refresh: it's still there.
@@ -143,7 +143,7 @@ In `EditorShell`, make `use(restoreDeck());` the first line (before `useEditorSh
   5. In DevTools, edit the stored `deck` value so it is invalid (for example, set `nextId` to `"x"`), refresh: the empty deck shows, the console has the warning, and `deck-backup` holds the broken value.
   6. In a private window the editor still works; the console shows a warning if IndexedDB is unavailable.
 
-- [ ] **Step 4: Commit.** `feat(deck): autosave the deck to IndexedDB and restore it on load`
+- [x] **Step 4: Commit.** `feat(deck): autosave the deck to IndexedDB and restore it on load`
 
 ---
 
@@ -151,9 +151,9 @@ In `EditorShell`, make `use(restoreDeck());` the first line (before `useEditorSh
 
 **Files:** `src/components/slide/elements/ElementView.tsx`, `src/components/shell/PrintDeck.tsx` (new), `src/components/shell/EditorShell.tsx`, `src/components/shell/useEditorShortcuts.ts`, `src/app/globals.css`
 
-- [ ] **Step 1: Render variant.** In `ElementView.tsx`: `export type RenderVariant = "canvas" | "thumbnail" | "print";`. Nothing else changes: `ChartView` already folds the variant into its id, and `TextView` and `SlideRenderer` only special-case `"canvas"`.
+- [x] **Step 1: Render variant.** In `ElementView.tsx`: `export type RenderVariant = "canvas" | "thumbnail" | "print";`. Nothing else changes: `ChartView` already folds the variant into its id, and `TextView` and `SlideRenderer` only special-case `"canvas"`.
 
-- [ ] **Step 2: Print portal.** New `src/components/shell/PrintDeck.tsx`:
+- [x] **Step 2: Print portal.** New `src/components/shell/PrintDeck.tsx`:
 
 ```tsx
 "use client";
@@ -198,7 +198,7 @@ export function PrintDeck() {
 
 `img.decode()` rejects for a broken image; the catch keeps a missing picture from blocking the print.
 
-- [ ] **Step 3: Print CSS.** Append to `src/app/globals.css`:
+- [x] **Step 3: Print CSS.** Append to `src/app/globals.css`:
 
 ```css
 .print-deck {
@@ -226,7 +226,7 @@ export function PrintDeck() {
 
 Off-screen (not `display: none`) on screen, so images load and decode before printing.
 
-- [ ] **Step 4: Wire it up.** In `EditorShell`:
+- [x] **Step 4: Wire it up.** In `EditorShell`:
   - Add `print:hidden` to the root `div` (`flex h-screen flex-col print:hidden`).
   - Render `<PrintDeck />` as the root div's sibling, wrapping both in a fragment.
   - Add an **Export PDF** button next to `<HistoryButtons />`, styled like `NewDeckButton`, `onClick={printDeck}`, `disabled` when the deck is empty, `title="Save as PDF from the print dialog (⌘P)"`.
@@ -243,7 +243,7 @@ if (mod && key === "p") {
 
 Import `printDeck` from `./PrintDeck`. ⌘P inside a text field keeps the browser default (blank page), because the shortcut handler returns early for editable targets; that is acceptable.
 
-- [ ] **Step 5: Check.** `npm run lint` and `npx tsc --noEmit` pass. On the sample deck and on a generated deck:
+- [x] **Step 5: Check.** `npm run lint` and `npx tsc --noEmit` pass. On the sample deck and on a generated deck:
   1. Click Export PDF: the print dialog opens with one landscape page per slide, in filmstrip order, with no editor chrome.
   2. Charts, tables, and images sit where they are on the canvas; slide backgrounds and shape fills are colored; chart lines and bars are not clipped.
   3. An uploaded image and an AI (proxied) image both appear.
@@ -251,16 +251,16 @@ Import `printDeck` from `./PrintDeck`. ⌘P inside a text field keeps the browse
   5. "Save as PDF" produces a file whose page size is 16:9 with no white margins (Chrome; Safari may add its own margins, note it if so).
   6. On an empty deck the button is disabled and ⌘P does nothing.
 
-- [ ] **Step 6: Commit.** `feat(export): print the deck to PDF, one slide per page`
+- [x] **Step 6: Commit.** `feat(export): print the deck to PDF, one slide per page`
 
 ---
 
 ## Task 3: Decisions note
 
-- [ ] **Step 1:** In `docs/superpowers/specs/2026-10-23-ai-presentation-builder-design.md`:
+- [x] **Step 1:** In `docs/superpowers/specs/2026-10-23-ai-presentation-builder-design.md`:
   - D11: "Print-to-PDF in the same page (Export PDF button or ⌘P mounts a print-only render of all slides)" instead of the `/print` route.
   - D16: drop "a temporary regression/demo reset kept until persistence lands in stage 8"; it stays as is.
   - Section 4 persistence bullet: "debounced (300 ms) subscribe → IndexedDB; zod-validated on load" (no localStorage fallback).
   - Section 6 Export bullet: match D11.
   - Add any decision that changed during the checklist to the table above.
-- [ ] **Step 2: Commit.** `docs: stage 8 decisions`
+- [x] **Step 2: Commit.** `docs: stage 8 decisions`
