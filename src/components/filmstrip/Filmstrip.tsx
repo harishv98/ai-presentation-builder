@@ -14,6 +14,7 @@ import {
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useState } from "react";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { useDeckStore } from "@/lib/deck/store";
 import { useGenerationStore } from "@/lib/generation/store";
 import { addBlankSlide, moveSlide } from "@/lib/slides/actions";
@@ -89,14 +90,15 @@ export function Filmstrip() {
         </DndContext>
       )}
       {planning && <OutlineGhost number={slideOrder.length + 1} />}
-      <button
-        type="button"
-        onClick={() => addBlankSlide("end")}
-        title="Add a blank slide at the end"
-        className="ml-6 flex aspect-video items-center justify-center rounded-sm border border-dashed border-zinc-300 text-xs text-zinc-500 hover:border-accent hover:text-accent"
-      >
-        + Add slide
-      </button>
+      <Tooltip content="Add a blank slide at the end" side="right">
+        <button
+          type="button"
+          onClick={() => addBlankSlide("end")}
+          className="ml-6 flex aspect-video items-center justify-center rounded-sm border border-dashed border-zinc-300 text-xs text-zinc-500 transition-colors outline-none hover:border-accent hover:text-accent focus-visible:ring-2 focus-visible:ring-accent/40"
+        >
+          + Add slide
+        </button>
+      </Tooltip>
     </div>
   );
 }

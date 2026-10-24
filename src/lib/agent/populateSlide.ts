@@ -60,7 +60,6 @@ export async function populateSlide(slideId: string, txn: TxnRef, signal: AbortS
   }
 }
 
-// Starts with the slide number and id so each slide's retry gets its own replay fixture name.
 function nudge(slideId: string, planned: PlannedSlide): string {
   return `Slide ${slideNumber(slideId)} (${slideId}) "${planned.title}": you did not make a tool call. Respond with real tool calls only (no text, no tags) that add this slide's content.`;
 }

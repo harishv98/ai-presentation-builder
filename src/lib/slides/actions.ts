@@ -1,5 +1,4 @@
 import { useChatStore } from "@/lib/chat/store";
-import { createSampleDeck } from "@/lib/deck/fixture";
 import { useDeckStore } from "@/lib/deck/store";
 import { resetGeneration } from "@/lib/generation/store";
 import { resolveCurrentSlideId, useUiStore } from "@/lib/ui/store";
@@ -33,16 +32,14 @@ export function duplicateCurrentSlide(): void {
   if (result?.ok && result.id) useUiStore.getState().goToSlide(result.id);
 }
 
+export function deleteSlide(id: string): void {
+  useDeckStore.getState().applyOps([{ op: "delete_slide", id }], { source: "user", label: "Delete slide" });
+}
+
 export function deleteCurrentSlide(): void {
   const id = currentSlideId();
-  if (id) useDeckStore.getState().applyOps([{ op: "delete_slide", id }], { source: "user", label: "Delete slide" });
+  if (id) deleteSlide(id);
 }
-
-export function startRenamingCurrentSlide(): void {
-  const id = currentSlideId();
-  if (id) useUiStore.getState().setRenamingSlideId(id);
-}
-
 export function renameSlide(id: string, title: string): void {
   const { deck, applyOps } = useDeckStore.getState();
   const slide = deck.slides[id];
@@ -75,10 +72,4 @@ export function startNewDeck(): void {
   resetGeneration();
   useChatStore.getState().setPlanThread([]);
   requestAnimationFrame(() => document.getElementById("deck-prompt")?.focus());
-}
-
-export function loadSampleDeck(): void {
-  useDeckStore.getState().replaceDeck(createSampleDeck());
-  resetGeneration();
-  useUiStore.setState({ currentSlideId: null, selectedIds: [] });
 }

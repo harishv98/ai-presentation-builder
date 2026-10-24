@@ -1,9 +1,10 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
 import { editElement, editTableStructure } from "@/lib/content/actions";
 import { tableSize } from "@/lib/content/tableData";
 import type { ElementOf } from "@/lib/deck/schema";
-import { Hint, Section, smallButtonClass } from "./fields";
+import { Hint, Section } from "./fields";
 
 export function TableInspector({ element }: { element: ElementOf<"table"> }) {
   const { id, table } = element;
@@ -25,28 +26,18 @@ export function TableInspector({ element }: { element: ElementOf<"table"> }) {
           {size.rows} {size.rows === 1 ? "row" : "rows"} × {size.cols} {size.cols === 1 ? "column" : "columns"}
         </p>
         <div className="grid grid-cols-2 gap-2">
-          <button type="button" className={smallButtonClass} onClick={() => editTableStructure(id, "add-row")}>
+          <Button variant="outline" onClick={() => editTableStructure(id, "add-row")}>
             Add row
-          </button>
-          <button
-            type="button"
-            className={smallButtonClass}
-            disabled={size.rows <= 1}
-            onClick={() => editTableStructure(id, "delete-row")}
-          >
+          </Button>
+          <Button variant="outline" disabled={size.rows <= 1} onClick={() => editTableStructure(id, "delete-row")}>
             Delete row
-          </button>
-          <button type="button" className={smallButtonClass} onClick={() => editTableStructure(id, "add-column")}>
+          </Button>
+          <Button variant="outline" onClick={() => editTableStructure(id, "add-column")}>
             Add column
-          </button>
-          <button
-            type="button"
-            className={smallButtonClass}
-            disabled={size.cols <= 1}
-            onClick={() => editTableStructure(id, "delete-column")}
-          >
+          </Button>
+          <Button variant="outline" disabled={size.cols <= 1} onClick={() => editTableStructure(id, "delete-column")}>
             Delete column
-          </button>
+          </Button>
         </div>
         <p className="text-xs text-zinc-500">Rows are added and removed at the bottom, columns at the right.</p>
       </Section>

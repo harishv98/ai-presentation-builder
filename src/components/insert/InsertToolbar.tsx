@@ -1,17 +1,17 @@
 "use client";
 
+import { ChartColumn, Circle, ImageUp, Minus, Square, Table2, Type, type LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { insertDefault, insertImage, type InsertKind } from "@/lib/content/insert";
 import { ImagePickerButton } from "./ImagePickerButton";
 
-const buttonClass = "rounded px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-100";
-
-const ITEMS: { kind: InsertKind; label: string }[] = [
-  { kind: "text", label: "Text" },
-  { kind: "chart", label: "Chart" },
-  { kind: "table", label: "Table" },
-  { kind: "rect", label: "Rectangle" },
-  { kind: "ellipse", label: "Ellipse" },
-  { kind: "line", label: "Line" },
+const ITEMS: { kind: InsertKind; label: string; Icon: LucideIcon }[] = [
+  { kind: "text", label: "Text", Icon: Type },
+  { kind: "chart", label: "Chart", Icon: ChartColumn },
+  { kind: "table", label: "Table", Icon: Table2 },
+  { kind: "rect", label: "Rectangle", Icon: Square },
+  { kind: "ellipse", label: "Ellipse", Icon: Circle },
+  { kind: "line", label: "Line", Icon: Minus },
 ];
 
 export function InsertToolbar() {
@@ -22,15 +22,16 @@ export function InsertToolbar() {
       className="flex h-10 shrink-0 items-center gap-0.5 border-b border-chrome-border bg-white px-3"
     >
       <span className="mr-1 text-xs font-medium tracking-wide text-zinc-500 uppercase">Insert</span>
-      {ITEMS.map((item) => (
-        <button key={item.kind} type="button" className={buttonClass} onClick={() => insertDefault(item.kind)}>
-          {item.label}
-        </button>
+      {ITEMS.map(({ kind, label, Icon }) => (
+        <Button key={kind} onClick={() => insertDefault(kind)}>
+          <Icon aria-hidden />
+          {label}
+        </Button>
       ))}
       <ImagePickerButton
         label="Image"
-        title="Upload an image from your computer"
-        className={buttonClass}
+        icon={<ImageUp aria-hidden />}
+        tooltip="Upload an image from your computer"
         onPicked={insertImage}
       />
     </div>

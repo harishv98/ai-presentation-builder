@@ -1,15 +1,20 @@
-import { Suspense } from "react";
-import { ClientOnly } from "@/components/shell/ClientOnly";
-import { EditorShell } from "@/components/shell/EditorShell";
+"use client";
 
-const loading = <div className="flex h-screen items-center justify-center text-sm text-zinc-400">Loading editor…</div>;
+import dynamic from "next/dynamic";
+
+const loading = (
+  <div className="flex h-screen items-center justify-center text-sm text-zinc-400">
+    Loading editor…
+  </div>
+);
+const EditorShell = dynamic(
+  () => import("@/components/shell/EditorShell").then((mod) => mod.EditorShell),
+  {
+    ssr: false,
+    loading: () => loading,
+  },
+);
 
 export default function Home() {
-  return (
-    <ClientOnly fallback={loading}>
-      <Suspense fallback={loading}>
-        <EditorShell />
-      </Suspense>
-    </ClientOnly>
-  );
+  return <EditorShell />;
 }

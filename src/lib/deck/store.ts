@@ -1,8 +1,20 @@
 import { create } from "zustand";
-import { createEmptyDeck } from "./fixture";
 import { recordTxn, redoTxn, undoTxn, type Txn, type TxnMeta } from "./history";
 import { applyOpsToDeck, type Op, type OpResult } from "./ops";
 import type { Deck } from "./schema";
+
+function createEmptyDeck(): Deck {
+  return {
+    id: "deck-1",
+    title: "Untitled deck",
+    theme: "default",
+    aspectRatio: "16:9",
+    slideOrder: [],
+    slides: {},
+    elements: {},
+    nextId: 1,
+  };
+}
 
 type DeckState = {
   deck: Deck;
@@ -45,13 +57,3 @@ export const useDeckStore = create<DeckState>()((set, get) => ({
     set({ deck: redoTxn(deck, txn), past: [...past, txn], future: future.slice(0, -1) });
   },
 }));
-
-declare global {
-  interface Window {
-    deckStore?: typeof useDeckStore;
-  }
-}
-
-if (process.env.NODE_ENV !== "production" && typeof window !== "undefined") {
-  window.deckStore = useDeckStore;
-}

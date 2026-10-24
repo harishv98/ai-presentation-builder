@@ -1,17 +1,20 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import { Button, type ButtonVariant } from "@/components/ui/Button";
 import { readImageFile, type PickedImage } from "@/lib/content/image";
 
 export function ImagePickerButton({
   label,
-  title,
-  className,
+  icon,
+  tooltip,
+  variant,
   onPicked,
 }: {
   label: string;
-  title: string;
-  className: string;
+  icon?: ReactNode;
+  tooltip: string;
+  variant?: ButtonVariant;
   onPicked: (image: PickedImage) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -19,9 +22,10 @@ export function ImagePickerButton({
 
   return (
     <>
-      <button type="button" className={className} title={title} onClick={() => inputRef.current?.click()}>
+      <Button variant={variant} tooltip={tooltip} onClick={() => inputRef.current?.click()}>
+        {icon}
         {label}
-      </button>
+      </Button>
       <input
         ref={inputRef}
         type="file"

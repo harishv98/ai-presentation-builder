@@ -13,7 +13,7 @@ A web-based AI presentation builder: prompt → AI plans and populates a 16:9 de
 |---|----------|--------|-----|
 | D1 | Framework | Next.js (App Router) + TypeScript, deployed on Vercel | Spec prefers Next.js; API route keeps the key server-side; TS because the schema is the backbone |
 | D2 | LLM provider | Sarvam only (`POST https://api.sarvam.ai/v2/chat/completions`, OpenAI-compatible, `tools` + `stream`) | User choice. Model locked to `sarvam-105b` after the stage 0 spike: 428 ms to first chunk vs 1193 ms, 211 vs 431 tokens, and tool arguments stream incrementally (deepseekv4.1-flash sends each call in one chunk). Note: it may return several tool calls per turn; `parallel_tool_calls: false` is not enforced |
-| D3 | Credit budget | No fallback provider; conserve credits instead | User choice. Savers: `reasoning_effort: "low"`, compact snapshot + last 6 messages, capped `max_tokens`, dev replay mode |
+| D3 | Credit budget | No fallback provider; conserve credits instead | User choice. Savers: `reasoning_effort: "low"`, compact snapshot + last 6 messages, capped `max_tokens` |
 | D4 | Agent loop location | Client-side loop; `/api/chat` is a thin proxy | One canonical deck; tools always hit live state; mid-turn drags just work; unified undo trivial; no serverless timeout risk |
 | D5 | Proxy guards | Per-IP rate limit (in-memory to start), server owns system prompt/tools/model, body size limit (200 KB), agent step cap (12) | Public endpoint spends a fixed, Sarvam-only credit budget |
 | D6 | State | Zustand hosting a pure `applyOps` reducer, Immer patches for history | Agent loop needs synchronous `getState()` and return values from ops; selector-scoped re-renders for chart thumbnails; subscriptions outside React |
@@ -25,7 +25,7 @@ A web-based AI presentation builder: prompt → AI plans and populates a 16:9 de
 | D12 | Nice-to-haves in scope | Persistence (localStorage/IndexedDB), AI-touched element highlight, keyboard nudging | User choice. Others (themes beyond default, present mode, lock, PPTX) out unless time remains |
 | D13 | Text model | Paragraph/bullet arrays with per-element style, `contentEditable` on double-click | Keeps editor and AI edits simple; no rich-text library |
 | D14 | Workflow | Work locally; unit tests and deployment deferred to stage 9 | User choice. Each stage until then is verified by the user's manual checklist |
-| D15 | Local TLS | Node runs with the system CA store (`--use-system-ca` on the spike script; `NODE_USE_SYSTEM_CA=1` in the shell for `next dev`) | Zscaler intercepts HTTPS on the dev machine; Node's bundled CA list rejects it. Harmless elsewhere |
+| D15 | Local TLS | Node runs with the system CA store (`NODE_USE_SYSTEM_CA=1` in the shell for `next dev`) | Zscaler intercepts HTTPS on the dev machine; Node's bundled CA list rejects it. Harmless elsewhere |
 | D16 | Where generation starts (S5-a/S5-b) | The app opens on an empty deck with a "Create a presentation" prompt box; the stage 1 sample deck is one click away. A prompt sent while the deck has no slides generates (from the canvas box or the chat); otherwise it is an edit. A header **New deck** button clears the deck in one undo step. No intent classifier — the edit prompt tells the model to point users at New deck | The reviewer's first step is "prompt a deck", so starting on the sample deck would make that an edit. Slide-count routing is deterministic, free, and undoable; a classifier costs a request and misroutes "make a slide about…". Loading the sample deck is the one exception to `applyOps`: it calls `replaceDeck` and clears undo history. Kept after stage 8: it only shows on an empty deck, so all it can overwrite is a deck just cleared with New deck |
 
 ## 3. Schema
@@ -73,6 +73,8 @@ Rules:
 - Ids are short and human-readable (`s3`, `e12`) from `deck.nextId`.
 - Changing chart `kind` never touches data.
 - `locked` is reserved in the type only (not implemented in v1).
+- Per-type behaviour lives in maps keyed by `ElementType`: `ELEMENTS` in `lib/deck/elements.ts` (AI description, patch merge, layout class, double-click action), `VIEWS` in `ElementView.tsx`, `INSPECTORS` in `Inspector.tsx` (`null` = no panel). Adding a type: add it to `ElementSchema`, then fix every type error. Agent tools are added by hand (`add_chart`/`add_table` stay separate tools).
+- Schema changes: a new field gets a zod `.default()` so saved decks still parse. Add a deck `version` and a migration only for a change a default can't express; otherwise a failed parse resets the deck (the raw copy stays in `deck-backup`).
 
 ## 4. Store, operations, history
 
@@ -87,7 +89,7 @@ Rules:
 - History: `Txn = { id, label, source, patches, inversePatches }`. Same `txnId` merges into one entry (one AI turn = one undo step). Cap 100. Not persisted.
 - Drags/resizes write only `ui.dragPreview` during movement; one transaction is committed on pointer-up. Text edits commit on blur.
 - `serializeForAI(deck)`: compact snapshot (slide id/title/layout/order; element id/type/box/truncated text/chart + table data), rebuilt before every request.
-- Persistence: debounced (300 ms) subscribe → IndexedDB (raw API, no localStorage fallback; data-URL images can exceed its ~5 MB cap); zod-validated on load before the editor renders. Only the deck is saved. Known gaps: two tabs overwrite each other; an edit made within 300 ms of a refresh can be lost.
+- Persistence: debounced (300 ms) subscribe → IndexedDB (raw API, no localStorage fallback; data-URL images can exceed its ~5 MB cap); zod-validated on load before the editor renders. Only the deck is saved. Known gaps: two tabs overwrite each other; an edit made within 300 ms of a refresh can be lost; uploaded images are data URLs inside undo patches, so 100 history entries with large images can hold hundreds of MB; storing images as IndexedDB blobs referenced by id would fix this and the size concern.
 - AI highlight: ops with `source: 'ai'` push touched ids into `ui.aiHighlights` for ~1.5 s; canvas shows a pulse outline.
 
 ## 5. Agent
@@ -97,7 +99,7 @@ Rules:
 - Server attaches system prompt for the mode, tool definitions (from zod), model id, `reasoning_effort: "low"` (sarvam-105b defaults to medium and can spend the whole output budget reasoning), `max_tokens: 3000` for every mode (the cap only limits; tokens are billed as used), `stream: true`.
 - `tool_choice` per mode: plan sends the named `{ type: 'function', function: { name: 'plan_deck' } }`, populate sends `"required"`, edit sends `"auto"`. The stage 5 Task 2 probe tried both forced forms against Sarvam: the named choice returned HTTP 200 with a `plan_deck` call and arguments, and `"required"` did too, so the named form is used for plan with no fallback needed.
 - Forcing a tool call is not a guarantee of a *structured* one. Sarvam sometimes answers with the tool call written into the message content as `<tool_call>name<arg_key>…</arg_key><arg_value>…</arg_value></tool_call>`; the client recovers those (section 5.2).
-- Guards: per-IP rate limit (40/min, 400/day, in-memory per instance, counted before parsing; one agent reply makes 2–4 requests), 200 KB body limit, zod-validated body with no `system` role, mode-allowed tool subset.
+- Guards: per-IP rate limit (40/min, 400/day, in-memory per instance, expired buckets swept past 5,000 keys, counted before parsing; one agent reply makes 2–4 requests), 200 KB body limit, zod-validated body with no `system` role, mode-allowed tool subset.
 - Key: `SARVAM_API_KEY` from `process.env` only. `.env.local` git-ignored; `.env.example` committed.
 - Streams Sarvam SSE through to the client unchanged.
 
@@ -122,7 +124,7 @@ Tagged tool calls: if a turn ends with no structured `tool_calls` but its conten
 
 **Populate (S5-f to S5-j)**
 - One request per slide, two at a time (so at most three streams briefly, while the title slide is still filling). Tools are the subset `add_element`, `update_element`, `add_chart`, `update_chart_data`, `add_table`, `update_table`, with `tool_choice: "required"`. The client rejects any call that targets another slide or an element on another slide. The snapshot is the whole outline (titles + intents) plus the full contents of the target slide, marked `<- the slide you fill`.
-- When every call in the first round succeeds, the slide is done with no follow-up request; otherwise up to 3 rounds to fix tool errors. If a round returns no tool call at all, one slide-specific nudge ("Slide N (sID) …: you did not make a tool call…") is sent inside the same 3-round cap; the nudge text starts with the slide number and id so each retry gets its own replay fixture name.
+- When every call in the first round succeeds, the slide is done with no follow-up request; otherwise up to 3 rounds to fix tool errors. If a round returns no tool call at all, one slide-specific nudge ("Slide N (sID) …: you did not make a tool call…") is sent inside the same 3-round cap.
 - Populate never passes `box`. After each successful call a pure helper arranges the slide's non-title elements by layout: `title`/`section` stack under the hero title with centered subtitles; `chart-forward` puts chart and text side by side at 2:1; otherwise up to 3 equal columns (text first, then visuals), 4+ into a 2-row grid. Edit mode keeps the stage 4 `placeBox`.
 - The canvas jumps to slide 1 as soon as it is added and then stays put: populate pulses touched elements and thumbnails but does not follow them, so the canvas doesn't bounce between the two slides filling at once.
 - Per-slide status is queued, writing, done, failed, or not filled (after Stop). Empty queued/writing slides show a shimmering skeleton shaped like the planned layout on canvas and thumbnail; a slide that already has content shows a "Writing…" badge. Failed slides offer **Retry** and stopped ones **Fill with AI**, both on the canvas strip and in the chat progress list, with an amber (failed) or gray (not filled) thumbnail dot.
@@ -143,11 +145,6 @@ Tagged tool calls: if a turn ends with no structured `tool_calls` but its conten
 - Chart/table/resize tools compile down to core ops.
 - `box` is optional on adds; a deterministic layout helper (`lib/agent/placement.ts`, built in stage 4) places the element into the least-occupied slot: title band, full body, left/right half, or bottom strip.
 - AI images: `https://picsum.photos/seed/<keyword>/800/600` with descriptive alt text.
-
-### 5.6 Dev replay
-- Server-side, in the proxy route. `AGENT_RECORD=1` tees each upstream stream into `fixtures/agent/<prefix><prompt-slug>.step<N>.sse` (reasoning-only events dropped). `AGENT_REPLAY=1` serves the matching fixture, one event per 30 ms, without calling Sarvam or needing a key; an unknown prompt gets a "No recording named …" reply. Neither runs in production.
-- The prefix is the mode: `plan-` and `populate-`; edit fixtures keep their stage 4 names. A populate slug comes from the per-slide instruction, so it carries the slide number, slide id, and planned title — one fixture per slide, plus one more per nudge retry.
-- Fresh-reload caveat: generation fixtures only replay after a full page reload, because slide ids are drawn from `deck.nextId` and only start at `s1` on a newly loaded empty deck. Clicking New deck and generating again produces `s13`, `s15`, … and the populate slugs no longer match, so those requests fall through to the "No recording named …" reply and the slides show as failed.
 
 ## 6. Canvas & drag-and-drop
 

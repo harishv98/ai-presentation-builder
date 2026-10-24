@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { ChatRequestSchema, MAX_BODY_BYTES, type ChatErrorBody } from "@/lib/agent/protocol";
 import { clientKey, takeToken } from "@/lib/server/rateLimit";
-import { fixtureName, recordEnabled, recordStream, replayEnabled, replayResponse, SSE_HEADERS } from "@/lib/server/replay";
 import { buildCompletionBody, callSarvam } from "@/lib/server/sarvam";
+
+const SSE_HEADERS = { "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-cache, no-transform" };
 
 export async function POST(request: Request): Promise<Response> {
   if (Number(request.headers.get("content-length")) > MAX_BODY_BYTES) return tooLarge();
@@ -23,9 +24,6 @@ export async function POST(request: Request): Promise<Response> {
   const parsed = ChatRequestSchema.safeParse(json);
   if (!parsed.success) return errorResponse(400, { code: "bad_request", error: z.prettifyError(parsed.error) });
 
-  const name = fixtureName(parsed.data.mode, parsed.data.messages);
-  if (replayEnabled()) return replayResponse(name);
-
   const apiKey = process.env.SARVAM_API_KEY;
   if (!apiKey) return errorResponse(500, { code: "not_configured", error: "SARVAM_API_KEY is not set on the server" });
 
@@ -45,8 +43,7 @@ export async function POST(request: Request): Promise<Response> {
     });
   }
 
-  const body = recordEnabled() ? recordStream(upstream.body, name) : upstream.body;
-  return new Response(body, { headers: SSE_HEADERS });
+  return new Response(upstream.body, { headers: SSE_HEADERS });
 }
 
 function errorResponse(status: number, body: ChatErrorBody, headers?: HeadersInit): Response {

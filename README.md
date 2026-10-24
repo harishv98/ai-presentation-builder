@@ -22,4 +22,3 @@ npm run dev                  # http://localhost:3000
 | `npm run build` / `npm start` | Production build and serve |
 | `npm run typecheck` | TypeScript check |
 | `npm run lint` | oxlint |
-| `npm run spike [model]` | Check that a Sarvam model streams valid tool calls (uses ~1 credit) |

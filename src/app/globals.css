@@ -67,8 +67,23 @@ body {
   }
 }
 
+.tooltip-content,
+.menu-content {
+  transform-origin: var(--radix-tooltip-content-transform-origin, var(--radix-dropdown-menu-content-transform-origin));
+  animation: popover-in 120ms ease-out;
+}
+
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .gen-shimmer {
+  .gen-shimmer,
+  .tooltip-content,
+  .menu-content {
     animation: none;
   }
 }

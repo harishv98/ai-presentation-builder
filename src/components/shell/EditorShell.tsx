@@ -1,5 +1,6 @@
 "use client";
 
+import { Download, FilePlus2, Redo2, Undo2 } from "lucide-react";
 import { use } from "react";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { CANVAS_REGION_ID } from "@/components/canvas/SlideFillOverlay";
@@ -8,6 +9,7 @@ import { FilmstripToolbar } from "@/components/filmstrip/FilmstripToolbar";
 import { EmptyDeck } from "@/components/generation/EmptyDeck";
 import { PlanningState } from "@/components/generation/PlanningState";
 import { InsertToolbar } from "@/components/insert/InsertToolbar";
+import { Button } from "@/components/ui/Button";
 import { selectRunning, useChatStore } from "@/lib/chat/store";
 import { restoreDeck } from "@/lib/deck/persist";
 import { useDeckStore } from "@/lib/deck/store";
@@ -18,7 +20,6 @@ import { PrintDeck, printDeck } from "./PrintDeck";
 import { RightPanel } from "./RightPanel";
 import { SelectionToolbar } from "./SelectionToolbar";
 import { useEditorShortcuts } from "./useEditorShortcuts";
-import "@/lib/agent/devtools";
 
 export function EditorShell() {
   use(restoreDeck());
@@ -41,7 +42,7 @@ export function EditorShell() {
         </header>
 
         <div className="flex min-h-0 flex-1">
-          <aside className="flex w-[216px] shrink-0 flex-col gap-3 overflow-y-auto border-r border-chrome-border bg-white p-3">
+          <aside className="flex w-[272px] shrink-0 flex-col gap-3 overflow-y-auto border-r border-chrome-border bg-white p-3">
             <FilmstripToolbar />
             <Filmstrip />
           </aside>
@@ -76,30 +77,33 @@ function NewDeckButton() {
   const empty = useDeckStore((s) => s.deck.slideOrder.length === 0);
   const running = useChatStore(selectRunning);
   return (
-    <button
-      type="button"
+    <Button
+      variant="outline"
+      size="md"
       onClick={startNewDeck}
       disabled={empty || running}
-      title="Clear the deck and describe a new one (⌘Z brings this one back)"
-      className="rounded border border-chrome-border px-2.5 py-1 text-sm text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:text-zinc-300 disabled:hover:bg-transparent"
+      tooltip="Clear the deck and describe a new one (⌘Z brings this one back)"
     >
+      <FilePlus2 aria-hidden />
       New deck
-    </button>
+    </Button>
   );
 }
 
 function ExportButton() {
   const empty = useDeckStore((s) => s.deck.slideOrder.length === 0);
   return (
-    <button
-      type="button"
+    <Button
+      variant="outline"
+      size="md"
       onClick={printDeck}
       disabled={empty}
-      title="Save as PDF from the print dialog (⌘P)"
-      className="rounded border border-chrome-border px-2.5 py-1 text-sm text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:text-zinc-300 disabled:hover:bg-transparent"
+      tooltip="Save as PDF from the print dialog"
+      shortcut="⌘P"
     >
+      <Download aria-hidden />
       Export PDF
-    </button>
+    </Button>
   );
 }
 
@@ -109,29 +113,30 @@ function HistoryButtons() {
   const undo = useDeckStore((s) => s.undo);
   const redo = useDeckStore((s) => s.redo);
 
-  const buttonClass =
-    "rounded px-2.5 py-1 text-sm text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:text-zinc-300 disabled:hover:bg-transparent";
-
   return (
     <div className="flex items-center gap-1">
-      <button
-        type="button"
-        className={buttonClass}
+      <Button
+        size="md"
+        iconOnly
+        aria-label="Undo"
         onClick={undo}
         disabled={!undoLabel}
-        title={undoLabel ? `Undo: ${undoLabel} (⌘Z)` : "Nothing to undo"}
+        tooltip={undoLabel ? `Undo: ${undoLabel}` : "Nothing to undo"}
+        shortcut={undoLabel && "⌘Z"}
       >
-        Undo
-      </button>
-      <button
-        type="button"
-        className={buttonClass}
+        <Undo2 aria-hidden />
+      </Button>
+      <Button
+        size="md"
+        iconOnly
+        aria-label="Redo"
         onClick={redo}
         disabled={!redoLabel}
-        title={redoLabel ? `Redo: ${redoLabel} (⌘⇧Z)` : "Nothing to redo"}
+        tooltip={redoLabel ? `Redo: ${redoLabel}` : "Nothing to redo"}
+        shortcut={redoLabel && "⌘⇧Z"}
       >
-        Redo
-      </button>
+        <Redo2 aria-hidden />
+      </Button>
     </div>
   );
 }

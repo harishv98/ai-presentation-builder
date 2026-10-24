@@ -34,7 +34,11 @@ const Z_SHORTCUTS: Record<string, [ZDirection, ZDirection]> = {
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
-  return target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+  return (
+    target.isContentEditable ||
+    ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName) ||
+    target.closest('[role="menu"]') !== null
+  );
 }
 
 export function useEditorShortcuts(): void {

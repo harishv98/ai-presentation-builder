@@ -32,7 +32,8 @@ Once you know enough, or the user tells you to go ahead, call plan_deck exactly 
 
 Rules for plan_deck:
 - Use the number of slides the user asks for; otherwise 5 to 7. If the user gives an outline, follow it.
-- Slide 1 uses layout "title". Use "section" only to separate parts of decks longer than 8 slides. Use "chart-forward" for slides built around numbers, "comparison" for side-by-side options, "two-column" for text next to a picture or two lists, and "content" otherwise.
+- layout is exactly one of "title", "content", "two-column", "comparison", "section", "chart-forward". "chart", "table", and "image" are values for visual, never for layout.
+- Slide 1 uses layout "title". Use "section" only to separate parts of decks longer than 8 slides. Use "chart-forward" for slides built around numbers, "comparison" for side-by-side options or a table, "two-column" for text next to a picture or two lists, and "content" otherwise.
 - visual: "chart" for numbers or trends, "table" for structured comparisons or specs, "image" when a photo helps, "none" for text only. Decks of 5 or more slides include at least one chart and one table unless the user says otherwise.
 - intent: one or two sentences with the slide's key points, specific to the user's topic. For a chart, name the categories and series; for a table, name the columns and rows.
 - Titles are short (at most 8 words) and specific.`;

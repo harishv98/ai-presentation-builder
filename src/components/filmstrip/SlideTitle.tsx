@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { useDeckStore } from "@/lib/deck/store";
 import { renameSlide } from "@/lib/slides/actions";
 import { useUiStore } from "@/lib/ui/store";
@@ -14,14 +15,14 @@ export function SlideTitle({ slideId }: { slideId: string }) {
   if (renaming) return <TitleInput slideId={slideId} title={title} onDone={() => setRenamingSlideId(null)} />;
 
   return (
-    <span
-      className="cursor-text truncate text-xs text-zinc-600"
-      style={{ maxWidth: THUMBNAIL_WIDTH }}
-      title="Double-click to rename"
-      onDoubleClick={() => setRenamingSlideId(slideId)}
-    >
-      {title}
-    </span>
+    <Tooltip content="Double-click to rename">
+      <span
+        className="min-w-0 flex-1 cursor-text truncate text-xs text-zinc-600"
+        onDoubleClick={() => setRenamingSlideId(slideId)}
+      >
+        {title}
+      </span>
+    </Tooltip>
   );
 }
 

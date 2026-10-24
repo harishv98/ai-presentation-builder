@@ -109,13 +109,3 @@ useDeckStore.subscribe((state, prev) => {
   const next = order[Math.min(Math.max(was, 0), order.length - 1)] ?? null;
   useUiStore.setState({ currentSlideId: next, selectedIds: [], renamingSlideId: null, editing: null });
 });
-
-declare global {
-  interface Window {
-    uiStore?: typeof useUiStore;
-  }
-}
-
-if (process.env.NODE_ENV !== "production" && typeof window !== "undefined") {
-  window.uiStore = useUiStore;
-}

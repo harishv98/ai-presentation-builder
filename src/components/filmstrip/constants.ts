@@ -1,1 +1,1 @@
-export const THUMBNAIL_WIDTH = 168;
+export const THUMBNAIL_WIDTH = 224;

@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { editElement } from "@/lib/content/actions";
 import {
   addCategory,
@@ -13,7 +15,7 @@ import {
 } from "@/lib/content/chartData";
 import { CHART_PALETTE } from "@/lib/deck/constants";
 import type { ChartKind, ChartPayload, ElementOf } from "@/lib/deck/schema";
-import { ColorInput, Field, NumberInput, Section, Segmented, smallButtonClass, TextInput } from "./fields";
+import { ColorInput, Field, NumberInput, Section, Segmented, TextInput } from "./fields";
 
 const KINDS: { value: ChartKind; label: string }[] = [
   { value: "bar", label: "Bar" },
@@ -154,12 +156,12 @@ function DataGrid({ chart, onChange }: { chart: ChartPayload; onChange: ChartCha
         </table>
       </div>
       <div className="flex gap-2">
-        <button type="button" className={smallButtonClass} onClick={() => onChange(addCategory(chart))}>
+        <Button variant="outline" onClick={() => onChange(addCategory(chart))}>
           + Category
-        </button>
-        <button type="button" className={smallButtonClass} onClick={() => onChange(addSeries(chart))}>
+        </Button>
+        <Button variant="outline" onClick={() => onChange(addSeries(chart))}>
           + Series
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -167,15 +169,16 @@ function DataGrid({ chart, onChange }: { chart: ChartPayload; onChange: ChartCha
 
 function RemoveButton({ label, disabled, onClick }: { label: string; disabled: boolean; onClick: () => void }) {
   return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      disabled={disabled}
-      onClick={onClick}
-      className="rounded px-1 text-zinc-400 hover:text-red-600 disabled:invisible"
-    >
-      ×
-    </button>
+    <Tooltip content={label}>
+      <button
+        type="button"
+        aria-label={label}
+        disabled={disabled}
+        onClick={onClick}
+        className="rounded px-1 text-zinc-400 transition-colors outline-none hover:text-red-600 focus-visible:ring-2 focus-visible:ring-accent/40 disabled:invisible"
+      >
+        ×
+      </button>
+    </Tooltip>
   );
 }

@@ -1,11 +1,10 @@
 "use client";
 
 import { useRef, useState, type ReactNode } from "react";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 const inputClass =
-  "w-full rounded border border-chrome-border px-2 py-1 text-sm text-zinc-800 outline-none focus:border-accent disabled:bg-zinc-50 disabled:text-zinc-400";
-export const smallButtonClass =
-  "rounded border border-chrome-border px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:text-zinc-300 disabled:hover:bg-transparent";
+  "w-full rounded border border-chrome-border px-2 py-1 text-sm text-zinc-800 outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:bg-zinc-50 disabled:text-zinc-400";
 
 type Change<T> = (value: T, txnId?: string) => void;
 
@@ -139,15 +138,16 @@ export function ColorInput({
 }) {
   const session = useEditSession();
   return (
-    <input
-      type="color"
-      value={toHex6(value)}
-      aria-label={ariaLabel}
-      title={ariaLabel}
-      className={`${className} shrink-0 cursor-pointer rounded border border-chrome-border bg-white p-0.5`}
-      onFocus={session.begin}
-      onChange={(event) => onChange(event.target.value, session.txnId())}
-    />
+    <Tooltip content={ariaLabel}>
+      <input
+        type="color"
+        value={toHex6(value)}
+        aria-label={ariaLabel}
+        className={`${className} shrink-0 cursor-pointer rounded border border-chrome-border bg-white p-0.5`}
+        onFocus={session.begin}
+        onChange={(event) => onChange(event.target.value, session.txnId())}
+      />
+    </Tooltip>
   );
 }
 
@@ -169,7 +169,7 @@ export function Segmented<T extends string>({
           key={option.value}
           type="button"
           aria-pressed={option.value === value}
-          className={`flex-1 rounded px-2 py-1 text-xs ${
+          className={`flex-1 rounded px-2 py-1 text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
             option.value === value ? "bg-accent text-white" : "text-zinc-700 hover:bg-zinc-100"
           }`}
           onClick={() => {

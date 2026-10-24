@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { generateDeck } from "@/lib/agent/generateDeck";
 import { MAX_PROMPT_CHARS } from "@/lib/agent/protocol";
 import { selectAwaitingPlanAnswer, selectRunning, useChatStore } from "@/lib/chat/store";
-import { addBlankSlide, loadSampleDeck } from "@/lib/slides/actions";
+import { addBlankSlide } from "@/lib/slides/actions";
 
 const EXAMPLES = [
   "A 6-slide deck on our Q3 product roadmap, with a revenue chart and a feature comparison table",
@@ -71,19 +72,11 @@ export function EmptyDeck() {
             Or{" "}
             <button type="button" onClick={() => addBlankSlide("end")} className="underline hover:text-zinc-600">
               start with a blank slide
-            </button>{" "}
-            ·{" "}
-            <button type="button" onClick={loadSampleDeck} className="underline hover:text-zinc-600">
-              load the sample deck
             </button>
           </p>
-          <button
-            type="submit"
-            disabled={running || !prompt.trim()}
-            className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-40"
-          >
+          <Button type="submit" variant="primary" size="lg" disabled={running || !prompt.trim()}>
             Generate deck
-          </button>
+          </Button>
         </div>
       </form>
     </div>

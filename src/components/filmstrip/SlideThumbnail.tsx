@@ -9,6 +9,7 @@ import { ARTBOARD_WIDTH } from "@/lib/deck/constants";
 import { useUiStore } from "@/lib/ui/store";
 import { THUMBNAIL_WIDTH } from "./constants";
 import { FillBadge } from "./FillBadge";
+import { SlideActions } from "./SlideActions";
 import { SlideTitle } from "./SlideTitle";
 
 export const ThumbnailArt = memo(function ThumbnailArt({ slideId }: { slideId: string }) {
@@ -26,6 +27,7 @@ export function SlideThumbnail({ slideId, index, active }: { slideId: string; in
   const goToSlide = useUiStore((s) => s.goToSlide);
   const aiPulse = useUiStore((s) => s.aiHighlights[slideId]);
   const dropTarget = useUiStore((s) => s.crossDrag?.targetSlideId === slideId);
+  const renaming = useUiStore((s) => s.renamingSlideId === slideId);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export function SlideThumbnail({ slideId, index, active }: { slideId: string; in
   }, [active]);
 
   return (
-    <li ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), transition }} className="relative">
+    <li ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), transition }} className="group relative">
       <div className={`flex items-start gap-2 ${isDragging ? "invisible" : ""}`}>
         <span className={`w-4 pt-1 text-right text-xs tabular-nums ${active ? "font-semibold text-accent" : "text-zinc-400"}`}>
           {index + 1}
@@ -64,7 +66,10 @@ export function SlideThumbnail({ slideId, index, active }: { slideId: string; in
               <span key={aiPulse} aria-hidden className="ai-pulse-thumb pointer-events-none absolute inset-0 rounded-sm" />
             )}
           </button>
-          <SlideTitle slideId={slideId} />
+          <div className="flex items-center gap-1" style={{ width: THUMBNAIL_WIDTH }}>
+            <SlideTitle slideId={slideId} />
+            {!renaming && <SlideActions slideId={slideId} active={active} />}
+          </div>
         </div>
       </div>
       {isDragging && (
