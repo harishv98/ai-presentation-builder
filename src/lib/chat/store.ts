@@ -15,6 +15,7 @@ export type TurnChanges = { prompt: string; changes: string[] };
 type ChatState = {
   items: ChatItem[];
   history: ChatMessage[];
+  planThread: ChatMessage[];
   recentChanges: TurnChanges[];
   draft: string;
   abort: AbortController | null;
@@ -23,6 +24,7 @@ type ChatState = {
   appendText: (id: string, delta: string) => void;
   beginTurn: (abort: AbortController) => void;
   endTurn: (exchange: ChatMessage[], changes: TurnChanges) => void;
+  setPlanThread: (planThread: ChatMessage[]) => void;
 };
 
 let nextItemId = 1;
@@ -30,6 +32,7 @@ let nextItemId = 1;
 export const useChatStore = create<ChatState>()((set) => ({
   items: [],
   history: [],
+  planThread: [],
   recentChanges: [],
   draft: "",
   abort: null,
@@ -50,7 +53,10 @@ export const useChatStore = create<ChatState>()((set) => ({
       history: [...s.history, ...exchange].slice(-HISTORY_MESSAGES),
       recentChanges: changes.changes.length > 0 ? [...s.recentChanges, changes].slice(-HISTORY_MESSAGES / 2) : s.recentChanges,
     })),
+  setPlanThread: (planThread) => set({ planThread }),
 }));
+
+export const selectAwaitingPlanAnswer = (s: ChatState) => s.planThread.length > 0 && s.abort === null;
 
 export const selectRunning = (s: ChatState) => s.abort !== null;
 

@@ -53,8 +53,7 @@ export function placeBox(deck: Deck, slideId: string, zone: "title" | "body"): B
 }
 
 export function stockImageUrl(keyword: string): string {
-  const seed = keyword.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-") || "slide";
-  return `https://picsum.photos/seed/${seed}/800/600`;
+  return `/api/image?q=${encodeURIComponent(keyword.trim().toLowerCase())}`;
 }
 
 function overlapArea(a: Box, b: Box): number {

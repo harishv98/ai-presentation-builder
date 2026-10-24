@@ -1,3 +1,4 @@
+import { useChatStore } from "@/lib/chat/store";
 import { createSampleDeck } from "@/lib/deck/fixture";
 import { useDeckStore } from "@/lib/deck/store";
 import { resetGeneration } from "@/lib/generation/store";
@@ -72,6 +73,7 @@ export function startNewDeck(): void {
     { source: "user", label: "New deck" },
   );
   resetGeneration();
+  useChatStore.getState().setPlanThread([]);
   requestAnimationFrame(() => document.getElementById("deck-prompt")?.focus());
 }
 

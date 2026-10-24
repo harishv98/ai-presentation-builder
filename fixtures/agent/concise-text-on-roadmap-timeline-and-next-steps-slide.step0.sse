@@ -1,0 +1,22 @@
+data: {"id":"20261024_5f87c631-ce47-492f-9972-cf8a125fc3ef","choices":[{"delta":{"content":"","role":"assistant"},"finish_reason":null,"index":0,"logprobs":null}],"created":1792827741,"model":"sarvam-105b","object":"chat.completion.chunk","prompt_token_ids":null,"prompt_text":null}
+
+data: {"id":"20261024_5f87c631-ce47-492f-9972-cf8a125fc3ef","choices":[{"delta":{"tool_calls":[{"index":0,"id":"chatcmpl-tool-a06b0f77bd6b0a10","function":{"name":"update_element"},"type":"function"}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827741,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_5f87c631-ce47-492f-9972-cf8a125fc3ef","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"elementId\": \""}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827741,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_5f87c631-ce47-492f-9972-cf8a125fc3ef","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"e"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827741,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_5f87c631-ce47-492f-9972-cf8a125fc3ef","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"1"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827741,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_5f87c631-ce47-492f-9972-cf8a125fc3ef","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"9"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827741,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_5f87c631-ce47-492f-9972-cf8a125fc3ef","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\", \"text\": "}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827741,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_5f87c631-ce47-492f-9972-cf8a125fc3ef","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"role\": \"body\", \"content\": [\"Phase 1: Discovery & Planning (Weeks 1–4)\", \"Phase 2: Core Build & Integration (Weeks 5–10)\", \"Phase 3: Testing, Launch & Iteration (Weeks 11–13)\", \"Next steps: finalize scope, assign owners, align resources\", \"Bi-weekly reviews & weekly standups\"], \"style\": {\"fontSize\": 28, \"align\": \"left\", \"color\": \"#334155\"}}}"}}]},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}],"created":1792827741,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_5f87c631-ce47-492f-9972-cf8a125fc3ef","choices":[{"delta":{},"finish_reason":"tool_calls","index":0,"logprobs":null,"stop_reason":null,"token_ids":null}],"created":1792827741,"model":"sarvam-105b","object":"chat.completion.chunk"}
+
+data: {"id":"20261024_5f87c631-ce47-492f-9972-cf8a125fc3ef","choices":[],"created":1792827741,"model":"sarvam-105b","object":"chat.completion.chunk","system_fingerprint":"vllm-0.29.1rc1.dev145+gfe61f3317-tp2-1c00f7c7","usage":{"completion_tokens":563,"prompt_tokens":5297,"total_tokens":5860,"completion_tokens_details":{"reasoning_tokens":424}}}
+
+data: [DONE]
+

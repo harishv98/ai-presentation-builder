@@ -24,6 +24,7 @@ export const ChatRequestSchema = z.object({
   mode: z.enum(AGENT_MODES),
   messages: z.array(ChatMessageSchema).min(1).max(200),
   deckSnapshot: z.string().max(150_000),
+  forcePlan: z.boolean().optional(),
 });
 
 export type ToolCall = z.infer<typeof ToolCallSchema>;

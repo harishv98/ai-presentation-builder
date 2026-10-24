@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { generateDeck } from "@/lib/agent/generateDeck";
 import { MAX_PROMPT_CHARS } from "@/lib/agent/protocol";
-import { selectRunning, useChatStore } from "@/lib/chat/store";
+import { selectAwaitingPlanAnswer, selectRunning, useChatStore } from "@/lib/chat/store";
 import { addBlankSlide, loadSampleDeck } from "@/lib/slides/actions";
 
 const EXAMPLES = [
@@ -15,6 +15,7 @@ const EXAMPLES = [
 export function EmptyDeck() {
   const [prompt, setPrompt] = useState("");
   const running = useChatStore(selectRunning);
+  const awaitingAnswer = useChatStore(selectAwaitingPlanAnswer);
 
   function submit() {
     if (running || !prompt.trim()) return;
@@ -33,7 +34,9 @@ export function EmptyDeck() {
       >
         <h1 className="text-lg font-semibold text-zinc-800">Create a presentation</h1>
         <p className="text-sm text-zinc-500">
-          Describe the deck you want. The AI outlines the slides, then fills each one. Everything stays editable.
+          {awaitingAnswer
+            ? `Answer the questions in chat, or say "go ahead" and the AI fills in the gaps.`
+            : "Describe the deck you want. The AI outlines the slides, then fills each one. Everything stays editable."}
         </p>
         <textarea
           id="deck-prompt"

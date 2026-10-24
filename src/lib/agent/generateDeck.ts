@@ -12,11 +12,14 @@ import { useUiStore } from "@/lib/ui/store";
 import { describeError, streamStep } from "./agentRequest";
 import { aiToolContext, executeToolCall } from "./executeTool";
 import { populateSlide, type TxnRef } from "./populateSlide";
+import type { ChatMessage } from "./protocol";
 import { clip } from "./snapshot";
 import { addPlannedSlide, PlanDeckArgs, parseStreamedPlan, type PlannedSlide } from "./tools/planTool";
 
 const POPULATE_CONCURRENCY = 2;
 const MAX_PLANNED_SLIDES = 10;
+const MAX_QUESTION_ROUNDS = 3;
+const PLAN_ATTEMPTS = 2;
 
 type OnPlannedSlide = (slideId: string, planned: PlannedSlide, index: number) => void;
 
@@ -43,7 +46,14 @@ export async function generateDeck(prompt: string): Promise<void> {
   };
 
   try {
-    const slideIds = await planOutline(text, txn, abort.signal, onPlannedSlide);
+    const thread = useChatStore.getState().planThread;
+    const { slideIds, question } = await planOutline(text, thread, txn, abort.signal, onPlannedSlide);
+    if (question) {
+      reply = question;
+      useChatStore.getState().setPlanThread([...thread, { role: "user", content: text }, { role: "assistant", content: question }]);
+      return;
+    }
+    useChatStore.getState().setPlanThread([]);
     finishOutline();
     const rest = slideIds.filter((id) => !startedEarly.has(id));
     fills.push(runPool(rest, abort.signal, (slideId) => populateSlide(slideId, txn, abort.signal)));
@@ -85,12 +95,22 @@ export async function fillSlide(slideId: string): Promise<void> {
   }
 }
 
-async function planOutline(prompt: string, txn: TxnRef, signal: AbortSignal, onSlide: OnPlannedSlide): Promise<string[]> {
+async function planOutline(
+  prompt: string,
+  thread: ChatMessage[],
+  txn: TxnRef,
+  signal: AbortSignal,
+  onSlide: OnPlannedSlide,
+): Promise<{ slideIds: string[]; question: string }> {
   const ctx = aiToolContext(txn);
   const slideIds: string[] = [];
   let finalCall = false;
   let renamed = false;
   let planError = "";
+  let text = "";
+  let textItemId: string | null = null;
+  const forcePlan = thread.filter((message) => message.role === "assistant").length >= MAX_QUESTION_ROUNDS;
+  const messages: ChatMessage[] = [...thread, { role: "user", content: prompt }];
 
   const register = (slideId: string, planned: PlannedSlide) => {
     slideIds.push(slideId);
@@ -100,12 +120,15 @@ async function planOutline(prompt: string, txn: TxnRef, signal: AbortSignal, onS
 
   let truncated = false;
   let broke = false;
+  const gotNothing = () => slideIds.length === 0 && !finalCall && !planError && !text.trim() && !truncated;
   try {
-    const result = await streamStep(
-      { mode: "plan", messages: [{ role: "user", content: prompt }], deckSnapshot: "" },
-      0,
-      signal,
-      {
+    for (let attempt = 0; attempt < PLAN_ATTEMPTS && gotNothing(); attempt++) {
+      const result = await streamStep({ mode: "plan", messages, deckSnapshot: "", ...(forcePlan && { forcePlan }) }, attempt, signal, {
+        onText(delta) {
+          const chat = useChatStore.getState();
+          textItemId ??= chat.pushItem({ kind: "assistant", text: "" });
+          chat.appendText(textItemId, delta);
+        },
         onToolArgs(args, index) {
           if (index !== 0) return;
           const streamed = parseStreamedPlan(args);
@@ -132,9 +155,10 @@ async function planOutline(prompt: string, txn: TxnRef, signal: AbortSignal, onS
           const known = slideIds.length;
           for (const [i, id] of useDeckStore.getState().deck.slideOrder.slice(known).entries()) register(id, slides[known + i]!);
         },
-      },
-    );
-    truncated = result.truncated;
+      });
+      truncated = result.truncated;
+      text = result.text;
+    }
   } catch (error) {
     if (signal.aborted || slideIds.length === 0) throw error;
     broke = true;
@@ -147,12 +171,13 @@ async function planOutline(prompt: string, txn: TxnRef, signal: AbortSignal, onS
 
   if (slideIds.length === 0) {
     if (planError) throw new Error(`The outline was invalid: ${clip(planError, 300)}`);
+    if (text.trim()) return { slideIds, question: text.trim() };
     throw new Error(truncated ? "The AI ran out of room while planning. Try a shorter request." : "The AI didn't return an outline. Try again.");
   }
   if (planError && !broke && !signal.aborted) {
     pushNotice("error", `The outline was incomplete (${clip(planError, 200)}). Filling the ${slideIds.length} slides that arrived.`);
   }
-  return slideIds;
+  return { slideIds, question: "" };
 }
 
 async function runPool(ids: string[], signal: AbortSignal, run: (id: string) => Promise<void>): Promise<void> {
