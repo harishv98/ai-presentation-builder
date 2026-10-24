@@ -10,7 +10,7 @@ export function TableView({ element }: { element: ElementOf<"table"> }) {
           return (
             <tr key={r} className={isHeader ? "bg-indigo-50 font-semibold text-slate-900" : undefined}>
               {row.map((cell, c) => (
-                <td key={c} className="truncate border border-slate-200 px-4 py-2">
+                <td key={c} data-cell={`${r}:${c}`} className="truncate border border-slate-200 px-4 py-2">
                   {cell}
                 </td>
               ))}

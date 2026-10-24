@@ -10,6 +10,7 @@ import { useUiStore } from "@/lib/ui/store";
 import { AiHighlightOverlay } from "./AiHighlightOverlay";
 import { SelectionOverlay } from "./SelectionOverlay";
 import { SlideFillOverlay } from "./SlideFillOverlay";
+import { TableCellEditor } from "./TableCellEditor";
 import { TextEditor } from "./TextEditor";
 import { useCanvasGesture } from "./useCanvasGesture";
 
@@ -35,6 +36,9 @@ export function CanvasStage({ slideId }: { slideId: string }) {
           hiddenId={active?.kind === "text" ? active.elementId : undefined}
         />
         {active?.kind === "text" && <TextEditor key={active.elementId} elementId={active.elementId} caret={active.caret} />}
+        {active?.kind === "cell" && (
+          <TableCellEditor key={`${active.elementId}:${active.row}:${active.col}`} editing={active} />
+        )}
         <AiHighlightOverlay slideId={slideId} />
         <SlideFillOverlay slideId={slideId} />
         <SelectionOverlay />
