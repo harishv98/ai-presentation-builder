@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { Op, OpResult } from "@/lib/deck/ops";
-import type { Deck, ElementOf, ElementType } from "@/lib/deck/schema";
+import { TextStyleSchema, type Deck, type ElementOf, type ElementType } from "@/lib/deck/schema";
 
 export type ToolContext = { deck: () => Deck; apply: (ops: Op[]) => OpResult[] };
 
@@ -67,10 +67,6 @@ export const BoxArg = z
   .object({ x: z.number(), y: z.number(), w: z.number().positive(), h: z.number().positive() })
   .describe("Position and size in artboard units (1600x900). Omit to let the editor place it");
 
-export const TextStyleArg = z.object({
-  fontSize: z.number().min(8).max(200).optional(),
-  bold: z.boolean().optional(),
-  italic: z.boolean().optional(),
-  align: z.enum(["left", "center", "right"]).optional(),
-  color: z.string().optional().describe("Hex color, e.g. #0f172a"),
+export const TextStyleArg = TextStyleSchema.partial().extend({
+  color: TextStyleSchema.shape.color.optional().describe("Hex color, e.g. #0f172a"),
 });

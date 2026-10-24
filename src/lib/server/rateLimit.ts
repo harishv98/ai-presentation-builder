@@ -1,5 +1,6 @@
 const MINUTE_MS = 60_000;
 const DAY_MS = 86_400_000;
+const SWEEP_AT = 5_000;
 
 export const RATE_LIMITS = { perMinute: 40, perDay: 400 };
 
@@ -13,6 +14,7 @@ export function clientKey(request: Request): string {
 }
 
 export function takeToken(key: string, now = Date.now()): { ok: true } | { ok: false; retryAfterSec: number } {
+  if (buckets.size >= SWEEP_AT) for (const [k, b] of buckets) if (now - b.dayStart >= DAY_MS) buckets.delete(k);
   const bucket = buckets.get(key) ?? { recent: [], dayStart: now, dayCount: 0 };
   buckets.set(key, bucket);
   if (now - bucket.dayStart >= DAY_MS) {
