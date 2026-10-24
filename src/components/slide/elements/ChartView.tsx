@@ -44,7 +44,7 @@ type CommonProps = { id: string; width: number; height: number; accessibilityLay
 function CartesianChartView({ chart, common }: { chart: ChartPayload; common: CommonProps }) {
   const data = chart.categories.map((category, i) => ({
     category,
-    ...Object.fromEntries(chart.series.map((s) => [s.name, s.data[i] ?? 0])),
+    ...Object.fromEntries(chart.series.map((s, j) => [`s${j}`, s.data[i] ?? 0])),
   }));
   const margin = { top: 10, right: 30, bottom: chart.xLabel ? 30 : 10, left: chart.yLabel ? 30 : 10 };
 
@@ -70,7 +70,7 @@ function CartesianChartView({ chart, common }: { chart: ChartPayload; common: Co
         <LineChart {...common} data={data} margin={margin}>
           {axes}
           {chart.series.map((s, i) => (
-            <Line key={s.name} dataKey={s.name} stroke={seriesColor(chart, i)} strokeWidth={4} dot={{ r: 6 }} isAnimationActive={false} />
+            <Line key={i} dataKey={`s${i}`} name={s.name} stroke={seriesColor(chart, i)} strokeWidth={4} dot={{ r: 6 }} isAnimationActive={false} />
           ))}
         </LineChart>
       );
@@ -80,8 +80,9 @@ function CartesianChartView({ chart, common }: { chart: ChartPayload; common: Co
           {axes}
           {chart.series.map((s, i) => (
             <Area
-              key={s.name}
-              dataKey={s.name}
+              key={i}
+              dataKey={`s${i}`}
+              name={s.name}
               stroke={seriesColor(chart, i)}
               fill={seriesColor(chart, i)}
               fillOpacity={0.25}
@@ -98,8 +99,9 @@ function CartesianChartView({ chart, common }: { chart: ChartPayload; common: Co
           {axes}
           {chart.series.map((s, i) => (
             <Bar
-              key={s.name}
-              dataKey={s.name}
+              key={i}
+              dataKey={`s${i}`}
+              name={s.name}
               fill={seriesColor(chart, i)}
               stackId={chart.kind === "stacked-bar" ? "stack" : undefined}
               isAnimationActive={false}

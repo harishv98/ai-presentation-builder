@@ -2,6 +2,7 @@
 
 import { useDeckStore } from "@/lib/deck/store";
 import { useSelectedIds } from "@/lib/ui/useSelectedIds";
+import { ChartInspector } from "./ChartInspector";
 import { Hint } from "./fields";
 import { TableInspector } from "./TableInspector";
 
@@ -17,6 +18,8 @@ export function Inspector() {
       return <Hint>Double-click the text on the slide, or press Enter, to edit it.</Hint>;
     case "table":
       return <TableInspector key={element.id} element={element} />;
+    case "chart":
+      return <ChartInspector key={element.id} element={element} />;
     default:
       return <Hint>Nothing to format for this element yet.</Hint>;
   }
