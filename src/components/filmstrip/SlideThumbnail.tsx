@@ -8,6 +8,7 @@ import { SlideRenderer } from "@/components/slide/SlideRenderer";
 import { ARTBOARD_WIDTH } from "@/lib/deck/constants";
 import { useUiStore } from "@/lib/ui/store";
 import { THUMBNAIL_WIDTH } from "./constants";
+import { FillBadge } from "./FillBadge";
 import { SlideTitle } from "./SlideTitle";
 
 export const ThumbnailArt = memo(function ThumbnailArt({ slideId }: { slideId: string }) {
@@ -52,6 +53,7 @@ export function SlideThumbnail({ slideId, index, active }: { slideId: string; in
             }`}
           >
             <ThumbnailArt slideId={slideId} />
+            <FillBadge slideId={slideId} />
             {aiPulse !== undefined && (
               <span key={aiPulse} aria-hidden className="ai-pulse-thumb pointer-events-none absolute inset-0 rounded-sm" />
             )}

@@ -4,8 +4,12 @@ import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { Filmstrip } from "@/components/filmstrip/Filmstrip";
 import { FilmstripToolbar } from "@/components/filmstrip/FilmstripToolbar";
+import { EmptyDeck } from "@/components/generation/EmptyDeck";
+import { PlanningState } from "@/components/generation/PlanningState";
+import { selectRunning, useChatStore } from "@/lib/chat/store";
 import { useDeckStore } from "@/lib/deck/store";
-import { addBlankSlide } from "@/lib/slides/actions";
+import { useGenerationStore } from "@/lib/generation/store";
+import { startNewDeck } from "@/lib/slides/actions";
 import { useCurrentSlideId } from "@/lib/ui/useCurrentSlideId";
 import { SelectionToolbar } from "./SelectionToolbar";
 import { useEditorShortcuts } from "./useEditorShortcuts";
@@ -18,7 +22,10 @@ export function EditorShell() {
   return (
     <div className="flex h-screen flex-col">
       <header className="flex h-12 shrink-0 items-center justify-between border-b border-chrome-border bg-white px-4">
-        <span className="truncate text-sm font-semibold">{deckTitle}</span>
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="truncate text-sm font-semibold">{deckTitle}</span>
+          <NewDeckButton />
+        </div>
         <SelectionToolbar />
         <HistoryButtons />
       </header>
@@ -41,23 +48,25 @@ export function EditorShell() {
 
 function CanvasArea() {
   const slideId = useCurrentSlideId();
-
-  if (!slideId) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-zinc-400">
-        <p>This deck has no slides yet.</p>
-        <button
-          type="button"
-          onClick={() => addBlankSlide("end")}
-          className="rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
-        >
-          Add blank slide
-        </button>
-      </div>
-    );
-  }
-
+  const planning = useGenerationStore((s) => s.phase === "planning");
+  if (!slideId) return planning ? <PlanningState /> : <EmptyDeck />;
   return <CanvasStage slideId={slideId} />;
+}
+
+function NewDeckButton() {
+  const empty = useDeckStore((s) => s.deck.slideOrder.length === 0);
+  const running = useChatStore(selectRunning);
+  return (
+    <button
+      type="button"
+      onClick={startNewDeck}
+      disabled={empty || running}
+      title="Clear the deck and describe a new one (⌘Z brings this one back)"
+      className="rounded border border-chrome-border px-2.5 py-1 text-sm text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:text-zinc-300 disabled:hover:bg-transparent"
+    >
+      New deck
+    </button>
+  );
 }
 
 function HistoryButtons() {

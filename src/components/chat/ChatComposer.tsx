@@ -1,17 +1,20 @@
 "use client";
 
 import { MAX_PROMPT_CHARS } from "@/lib/agent/protocol";
-import { runAgent, stopAgent } from "@/lib/agent/runAgent";
+import { stopAgent } from "@/lib/agent/runAgent";
+import { sendPrompt } from "@/lib/agent/sendPrompt";
 import { selectRunning, useChatStore } from "@/lib/chat/store";
+import { useDeckStore } from "@/lib/deck/store";
 
 export function ChatComposer() {
   const draft = useChatStore((s) => s.draft);
   const setDraft = useChatStore((s) => s.setDraft);
   const running = useChatStore(selectRunning);
+  const emptyDeck = useDeckStore((s) => s.deck.slideOrder.length === 0);
 
   function send() {
     if (running || !draft.trim()) return;
-    void runAgent(draft);
+    void sendPrompt(draft);
     setDraft("");
   }
 
@@ -35,7 +38,7 @@ export function ChatComposer() {
         }}
         rows={2}
         maxLength={MAX_PROMPT_CHARS}
-        placeholder="Ask the AI to change the deck…"
+        placeholder={emptyDeck ? "Describe the presentation you want…" : "Ask the AI to change the deck…"}
         className="min-h-10 flex-1 resize-none rounded border border-chrome-border px-3 py-2 text-sm focus:border-accent focus:outline-none"
       />
       {running ? (

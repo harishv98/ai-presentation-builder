@@ -6,6 +6,7 @@ import { ARTBOARD_HEIGHT, ARTBOARD_WIDTH } from "@/lib/deck/constants";
 import { useUiStore } from "@/lib/ui/store";
 import { AiHighlightOverlay } from "./AiHighlightOverlay";
 import { SelectionOverlay } from "./SelectionOverlay";
+import { SlideFillOverlay } from "./SlideFillOverlay";
 import { useCanvasGesture } from "./useCanvasGesture";
 
 export function CanvasStage({ slideId }: { slideId: string }) {
@@ -22,6 +23,7 @@ export function CanvasStage({ slideId }: { slideId: string }) {
       >
         <SlideRenderer slideId={slideId} previewBoxes={previewBoxes} />
         <AiHighlightOverlay slideId={slideId} />
+        <SlideFillOverlay slideId={slideId} />
         <SelectionOverlay />
       </div>
     </ArtboardViewport>

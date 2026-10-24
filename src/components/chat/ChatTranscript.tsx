@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { runAgent } from "@/lib/agent/runAgent";
+import { GenerationProgress } from "@/components/generation/GenerationProgress";
+import { sendPrompt } from "@/lib/agent/sendPrompt";
 import { selectRunning, useChatStore, type ChatItem } from "@/lib/chat/store";
+import { useDeckStore } from "@/lib/deck/store";
 
 const EXAMPLES = [
   "Make slide 2 more concise",
@@ -27,7 +29,7 @@ export function ChatTranscript() {
       {items.map((item) => (
         <ChatRow key={item.id} item={item} running={running} />
       ))}
-      {running && items.at(-1)?.kind !== "assistant" && <p className="animate-pulse text-xs text-zinc-400">Thinking…</p>}
+      {running && items.at(-1)?.kind !== "assistant" && items.at(-1)?.kind !== "generation" && <p className="animate-pulse text-xs text-zinc-400">Thinking…</p>}
       <div ref={endRef} />
     </div>
   );
@@ -35,6 +37,14 @@ export function ChatTranscript() {
 
 function EmptyChat() {
   const setDraft = useChatStore((s) => s.setDraft);
+  const emptyDeck = useDeckStore((s) => s.deck.slideOrder.length === 0);
+  if (emptyDeck) {
+    return (
+      <div className="flex flex-1 flex-col justify-center gap-3 p-6 text-sm text-zinc-500">
+        <p>Describe the presentation you want, here or in the box on the canvas. The AI outlines the slides, then fills each one.</p>
+      </div>
+    );
+  }
   return (
     <div className="flex flex-1 flex-col justify-center gap-3 p-6 text-sm text-zinc-500">
       <p>Ask the AI to change this deck. It edits the slides in place, and ⌘Z undoes a whole reply.</p>
@@ -70,13 +80,15 @@ function ChatRow({ item, running }: { item: ChatItem; running: boolean }) {
           {item.ok ? "✓" : "✗"} {item.summary}
         </p>
       );
+    case "generation":
+      return <GenerationProgress runId={item.runId} />;
     case "notice": {
       const retry = item.retryPrompt;
       return (
         <div className={`rounded px-3 py-2 text-xs ${item.tone === "error" ? "bg-red-50 text-red-700" : "bg-zinc-100 text-zinc-600"}`}>
           <p>{item.text}</p>
           {retry && !running && (
-            <button type="button" onClick={() => void runAgent(retry)} className="mt-1 font-medium underline">
+            <button type="button" onClick={() => void sendPrompt(retry)} className="mt-1 font-medium underline">
               Retry
             </button>
           )}

@@ -15,9 +15,11 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useState } from "react";
 import { useDeckStore } from "@/lib/deck/store";
+import { useGenerationStore } from "@/lib/generation/store";
 import { addBlankSlide, moveSlide } from "@/lib/slides/actions";
 import { useUiStore } from "@/lib/ui/store";
 import { useCurrentSlideId } from "@/lib/ui/useCurrentSlideId";
+import { THUMBNAIL_WIDTH } from "./constants";
 import { SlideThumbnail, ThumbnailArt } from "./SlideThumbnail";
 
 const DRAG_ACTIVATION_PX = 5;
@@ -31,6 +33,7 @@ export function Filmstrip() {
   const currentSlideId = useCurrentSlideId();
   const draggingSlideId = useUiStore((s) => s.draggingSlideId);
   const setDraggingSlideId = useUiStore((s) => s.setDraggingSlideId);
+  const planning = useGenerationStore((s) => s.phase === "planning");
   const [overIndex, setOverIndex] = useState(0);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: DRAG_ACTIVATION_PX } }));
 
@@ -85,6 +88,7 @@ export function Filmstrip() {
           </DragOverlay>
         </DndContext>
       )}
+      {planning && <OutlineGhost number={slideOrder.length + 1} />}
       <button
         type="button"
         onClick={() => addBlankSlide("end")}
@@ -93,6 +97,19 @@ export function Filmstrip() {
       >
         + Add slide
       </button>
+    </div>
+  );
+}
+
+function OutlineGhost({ number }: { number: number }) {
+  const title = useGenerationStore((s) => s.nextTitle);
+  return (
+    <div className="flex items-start gap-2" aria-label="Outlining the next slide">
+      <span className="w-4 pt-1 text-right text-xs text-zinc-300 tabular-nums">{number}</span>
+      <div className="flex min-w-0 flex-col gap-1" style={{ width: THUMBNAIL_WIDTH }}>
+        <div className="gen-shimmer aspect-video rounded-sm" />
+        <span className="truncate text-xs text-zinc-500">{title ?? ""}</span>
+      </div>
     </div>
   );
 }
