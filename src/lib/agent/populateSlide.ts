@@ -9,7 +9,6 @@ import { serializeForPopulate } from "./snapshot";
 import type { PlannedSlide } from "./tools/planTool";
 
 const POPULATE_MAX_STEPS = 3;
-const NUDGE = "You did not make a tool call. Respond with real tool calls only (no text, no tags) that add this slide's content.";
 
 export type TxnRef = { txnId: string; label: string };
 
@@ -41,15 +40,15 @@ export async function populateSlide(slideId: string, txn: TxnRef, signal: AbortS
       });
       turn.push({
         role: "assistant",
-        content: result.text || null,
+        content: result.toolCalls.length > 0 ? result.text || null : result.text,
         ...(result.toolCalls.length > 0 && { tool_calls: result.toolCalls }),
       });
       for (const execution of executions) turn.push({ role: "tool", tool_call_id: execution.callId, content: execution.content });
       if (executions.length === 0) {
         lastError = result.truncated ? "The AI ran out of room while thinking" : "The AI made no tool calls";
-        if (nudged) break;
+        if (nudged || step + 1 >= POPULATE_MAX_STEPS) break;
         nudged = true;
-        turn.push({ role: "user", content: NUDGE });
+        turn.push({ role: "user", content: nudge(slideId, planned) });
         continue;
       }
       if (executions.every((execution) => execution.ok)) break;
@@ -61,9 +60,17 @@ export async function populateSlide(slideId: string, txn: TxnRef, signal: AbortS
   }
 }
 
+// Starts with the slide number and id so each slide's retry gets its own replay fixture name.
+function nudge(slideId: string, planned: PlannedSlide): string {
+  return `Slide ${slideNumber(slideId)} (${slideId}) "${planned.title}": you did not make a tool call. Respond with real tool calls only (no text, no tags) that add this slide's content.`;
+}
+
+function slideNumber(slideId: string): number {
+  return useDeckStore.getState().deck.slideOrder.indexOf(slideId) + 1;
+}
+
 function instruction(slideId: string, planned: PlannedSlide): string {
-  const number = useDeckStore.getState().deck.slideOrder.indexOf(slideId) + 1;
-  return `Fill slide ${number} (${slideId}) "${planned.title}". Layout: ${planned.layout}. Planned visual: ${planned.visual}. It should cover: ${planned.intent}`;
+  return `Fill slide ${slideNumber(slideId)} (${slideId}) "${planned.title}". Layout: ${planned.layout}. Planned visual: ${planned.visual}. It should cover: ${planned.intent}`;
 }
 
 function tidy(slideId: string, txn: TxnRef): void {
