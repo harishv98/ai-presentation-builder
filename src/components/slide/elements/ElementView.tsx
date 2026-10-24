@@ -17,7 +17,7 @@ export const ElementView = memo(function ElementView({
 }) {
   switch (element.type) {
     case "text":
-      return <TextView element={element} />;
+      return <TextView element={element} variant={variant} />;
     case "image":
       return <ImageView element={element} />;
     case "chart":

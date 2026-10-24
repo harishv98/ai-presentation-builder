@@ -11,10 +11,12 @@ export function SlideRenderer({
   slideId,
   variant = "canvas",
   previewBoxes,
+  hiddenId,
 }: {
   slideId: string;
   variant?: RenderVariant;
   previewBoxes?: Record<string, Box>;
+  hiddenId?: string;
 }) {
   const background = useDeckStore((s) => s.deck.slides[slideId]?.background.color);
   const elements = useDeckStore(
@@ -36,6 +38,7 @@ export function SlideRenderer({
           box={previewBoxes?.[element.id] ?? element.box}
           z={z}
           variant={variant}
+          hidden={element.id === hiddenId}
         />
       ))}
     </div>
@@ -47,11 +50,13 @@ const PositionedElement = memo(function PositionedElement({
   box,
   z,
   variant,
+  hidden,
 }: {
   element: Element;
   box: Box;
   z: number;
   variant: RenderVariant;
+  hidden: boolean;
 }) {
   const resized = box.w !== element.box.w || box.h !== element.box.h;
   const shown = resized ? { ...element, box } : element;
@@ -66,6 +71,7 @@ const PositionedElement = memo(function PositionedElement({
         height: box.h,
         zIndex: z,
         outlineWidth: "calc(1.5px / var(--artboard-scale))",
+        visibility: hidden ? "hidden" : undefined,
       }}
     >
       <ElementView element={shown} variant={variant} />

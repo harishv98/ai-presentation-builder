@@ -8,8 +8,10 @@ import {
   nudgeSelection,
   reorderSelection,
   selectAllOnSlide,
+  singleSelectedId,
   type ZDirection,
 } from "@/lib/canvas/actions";
+import { startEditing } from "@/lib/content/actions";
 import { useDeckStore } from "@/lib/deck/store";
 import { deleteCurrentSlide, duplicateCurrentSlide, isFilmstripFocused } from "@/lib/slides/actions";
 import { goRelative, useUiStore } from "@/lib/ui/store";
@@ -75,6 +77,14 @@ export function useEditorShortcuts(): void {
 
       if (event.key === "Escape") {
         useUiStore.getState().clearSelection();
+        return;
+      }
+      if (event.key === "Enter") {
+        const id = singleSelectedId();
+        if (id && !(event.target instanceof HTMLButtonElement)) {
+          event.preventDefault();
+          startEditing(id);
+        }
         return;
       }
       if (event.key === "Delete" || event.key === "Backspace") {

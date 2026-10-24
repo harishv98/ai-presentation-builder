@@ -73,6 +73,9 @@ export function useCanvasGesture(slideId: string) {
   function onPointerDown(event: StageEvent) {
     if (event.button !== 0 || gesture.current) return;
     event.stopPropagation();
+    const target = event.target as HTMLElement;
+    if (target.closest("[data-editor]")) return;
+    if (useUiStore.getState().editing) (document.activeElement as HTMLElement | null)?.blur();
 
     const { deck } = useDeckStore.getState();
     const ui = useUiStore.getState();
@@ -81,7 +84,6 @@ export function useCanvasGesture(slideId: string) {
 
     const scale = event.currentTarget.getBoundingClientRect().width / ARTBOARD_WIDTH;
     const origin = toLogical(event, scale);
-    const target = event.target as HTMLElement;
     const handle = target.closest<HTMLElement>("[data-handle]")?.dataset.handle as Handle | undefined;
     const elementId = target.closest<HTMLElement>("[data-element-id]")?.dataset.elementId;
     const selected = selectionOnSlide(deck, slideId, ui.selectedIds);

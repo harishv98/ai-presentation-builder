@@ -41,6 +41,7 @@ export function SelectionOverlay() {
   const selectedIds = useSelectedIds();
   const preview = useUiStore((s) => s.dragPreview);
   const marquee = useUiStore((s) => s.marquee);
+  const editing = useUiStore((s) => s.editing !== null);
   const deckBoxes = useDeckStore(useShallow((s) => selectedIds.map((id) => s.deck.elements[id]?.box)));
   const shown = selectedIds.flatMap((id, i) => {
     const box = preview?.boxes[id] ?? deckBoxes[i];
@@ -63,7 +64,7 @@ export function SelectionOverlay() {
           style={{ ...boxStyle(unionBox(boxes)), borderWidth: px(1) }}
         />
       )}
-      {boxes.length === 1 && HANDLES.map((handle) => <ResizeHandle key={handle} handle={handle} box={boxes[0]!} />)}
+      {boxes.length === 1 && !editing && HANDLES.map((handle) => <ResizeHandle key={handle} handle={handle} box={boxes[0]!} />)}
       {preview?.guides.map((guide) => <GuideLine key={`${guide.axis}${guide.at}`} guide={guide} />)}
       {marquee && (
         <div className="absolute border-accent bg-accent/10" style={{ ...boxStyle(marquee), borderWidth: px(1) }} />
