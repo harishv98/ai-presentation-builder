@@ -1,4 +1,5 @@
 import type { ToolCall } from "./protocol";
+import { parseTaggedToolCalls, taggedStart } from "./toolCallTags";
 
 type ToolCallDelta = { index?: number; id?: string; function?: { name?: string; arguments?: string } };
 
@@ -46,6 +47,7 @@ export type TurnEvents = {
 
 export function createTurnAccumulator(step: number, events: TurnEvents) {
   let text = "";
+  let shown = 0;
   let usage: unknown;
   let finishReason: string | null = null;
   const calls: ToolCall[] = [];
@@ -70,7 +72,18 @@ export function createTurnAccumulator(step: number, events: TurnEvents) {
       if (!delta) return;
       if (delta.content) {
         text += delta.content;
-        events.onText?.(delta.content);
+        const tags = taggedStart(text);
+        const visible = tags === -1 ? text.length : tags;
+        if (visible > shown) {
+          events.onText?.(text.slice(shown, visible));
+          shown = visible;
+        }
+        // Stream the salvaged arguments the same way a real tool call streams, so the outline
+        // still appears slide by slide.
+        if (tags !== -1 && calls.length === 0) {
+          const [first] = parseTaggedToolCalls(text.slice(tags), false);
+          if (first) events.onToolArgs?.(first.arguments, 0);
+        }
       }
       for (const part of delta.tool_calls ?? []) {
         const index = part.index ?? (part.id || open === -1 ? calls.length : open);
@@ -89,6 +102,17 @@ export function createTurnAccumulator(step: number, events: TurnEvents) {
     },
     finish() {
       closeOpen();
+      const tags = taggedStart(text);
+      if (tags !== -1) {
+        if (calls.length === 0) {
+          for (const [index, tagged] of parseTaggedToolCalls(text.slice(tags)).entries()) {
+            const call: ToolCall = { id: `call_${step}_tag_${index}`, type: "function", function: tagged };
+            calls.push(call);
+            events.onToolCall(call);
+          }
+        }
+        text = text.slice(0, tags);
+      }
       return { text, toolCalls: calls.filter(Boolean), usage, truncated: finishReason === "length" };
     },
   };
