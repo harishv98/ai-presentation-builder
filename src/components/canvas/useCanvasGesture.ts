@@ -11,6 +11,7 @@ import {
   unionBox,
   type Point,
 } from "@/lib/canvas/geometry";
+import { moveElementsToSlide } from "@/lib/canvas/actions";
 import { resizeBox, type Handle } from "@/lib/canvas/resize";
 import { guidesFor, snapMove, snapResize } from "@/lib/canvas/snap";
 import { ARTBOARD_WIDTH } from "@/lib/deck/constants";
@@ -44,9 +45,15 @@ function toLogical(event: StageEvent, scale: number): Point {
   return { x: (event.clientX - rect.left) / scale, y: (event.clientY - rect.top) / scale };
 }
 
+function dropSlideAt(x: number, y: number, sourceSlideId: string): string | null {
+  const id = document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-drop-slide-id]")?.dataset.dropSlideId;
+  return id && id !== sourceSlideId ? id : null;
+}
+
 function endGesture(): void {
   const ui = useUiStore.getState();
   ui.setDragPreview(null);
+  ui.setCrossDrag(null);
   ui.setMarquee(null);
 }
 
@@ -146,6 +153,22 @@ export function useCanvasGesture(slideId: string) {
       case "move": {
         if (!g.started && !pastThreshold) return;
         g.started = true;
+        const rect = event.currentTarget.getBoundingClientRect();
+        const { clientX: x, clientY: y } = event;
+        if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+          ui.setDragPreview(null);
+          ui.setCrossDrag({
+            ids: g.ids,
+            group: g.group,
+            scale: g.scale,
+            left: x - (g.origin.x - g.group.x) * g.scale,
+            top: y - (g.origin.y - g.group.y) * g.scale,
+            targetSlideId: dropSlideAt(x, y, slideId),
+            copy: event.altKey,
+          });
+          return;
+        }
+        if (ui.crossDrag) ui.setCrossDrag(null);
         const lock = event.shiftKey ? (Math.abs(dx) >= Math.abs(dy) ? "horizontal" : "vertical") : null;
         if (lock === "horizontal") dy = 0;
         if (lock === "vertical") dx = 0;
@@ -188,12 +211,17 @@ export function useCanvasGesture(slideId: string) {
     const { applyOps } = useDeckStore.getState();
 
     if (g.kind === "move") {
-      if (!g.started && g.wasSelected) useUiStore.getState().setSelection([g.pressedId]);
-      const ops: Op[] = g.ids.flatMap((id): Op[] => {
-        const box = preview?.boxes[id];
-        return box && !sameBox(box, g.startBoxes[id]!) ? [{ op: "move_element", id, box: { x: box.x, y: box.y } }] : [];
-      });
-      if (ops.length > 0) applyOps(ops, { source: "user", label: countLabel("Move", ops.length) });
+      const cross = useUiStore.getState().crossDrag;
+      if (cross) {
+        if (cross.targetSlideId) moveElementsToSlide(g.ids, cross.targetSlideId, event.altKey);
+      } else {
+        if (!g.started && g.wasSelected) useUiStore.getState().setSelection([g.pressedId]);
+        const ops: Op[] = g.ids.flatMap((id): Op[] => {
+          const box = preview?.boxes[id];
+          return box && !sameBox(box, g.startBoxes[id]!) ? [{ op: "move_element", id, box: { x: box.x, y: box.y } }] : [];
+        });
+        if (ops.length > 0) applyOps(ops, { source: "user", label: countLabel("Move", ops.length) });
+      }
     }
     if (g.kind === "resize") {
       const box = preview?.boxes[g.id];

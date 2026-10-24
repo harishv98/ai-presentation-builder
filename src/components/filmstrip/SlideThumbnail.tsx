@@ -25,6 +25,7 @@ export function SlideThumbnail({ slideId, index, active }: { slideId: string; in
   });
   const goToSlide = useUiStore((s) => s.goToSlide);
   const aiPulse = useUiStore((s) => s.aiHighlights[slideId]);
+  const dropTarget = useUiStore((s) => s.crossDrag?.targetSlideId === slideId);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -48,8 +49,13 @@ export function SlideThumbnail({ slideId, index, active }: { slideId: string; in
             type="button"
             onClick={() => goToSlide(slideId)}
             aria-current={active ? "true" : undefined}
+            data-drop-slide-id={slideId}
             className={`relative block overflow-hidden rounded-sm ring-offset-1 focus:outline-none ${
-              active ? "ring-2 ring-accent" : "ring-1 ring-zinc-200 hover:ring-zinc-400 focus-visible:ring-zinc-500"
+              dropTarget
+                ? "ring-2 ring-accent ring-offset-2"
+                : active
+                  ? "ring-2 ring-accent"
+                  : "ring-1 ring-zinc-200 hover:ring-zinc-400 focus-visible:ring-zinc-500"
             }`}
           >
             <ThumbnailArt slideId={slideId} />

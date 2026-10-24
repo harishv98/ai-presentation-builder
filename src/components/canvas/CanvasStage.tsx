@@ -8,6 +8,7 @@ import { ARTBOARD_HEIGHT, ARTBOARD_WIDTH } from "@/lib/deck/constants";
 import { useDeckStore } from "@/lib/deck/store";
 import { useUiStore } from "@/lib/ui/store";
 import { AiHighlightOverlay } from "./AiHighlightOverlay";
+import { CrossSlideGhost } from "./CrossSlideGhost";
 import { SelectionOverlay } from "./SelectionOverlay";
 import { SlideFillOverlay } from "./SlideFillOverlay";
 import { TableCellEditor } from "./TableCellEditor";
@@ -23,27 +24,30 @@ export function CanvasStage({ slideId }: { slideId: string }) {
   const handlers = useCanvasGesture(slideId);
 
   return (
-    <ArtboardViewport onBackgroundPointerDown={clearSelection}>
-      <div
-        className="relative touch-none select-none"
-        style={{ width: ARTBOARD_WIDTH, height: ARTBOARD_HEIGHT }}
-        {...handlers}
-        onDoubleClick={onDoubleClick}
-      >
-        <SlideRenderer
-          slideId={slideId}
-          previewBoxes={previewBoxes}
-          hiddenId={active?.kind === "text" ? active.elementId : undefined}
-        />
-        {active?.kind === "text" && <TextEditor key={active.elementId} elementId={active.elementId} caret={active.caret} />}
-        {active?.kind === "cell" && (
-          <TableCellEditor key={`${active.elementId}:${active.row}:${active.col}`} editing={active} />
-        )}
-        <AiHighlightOverlay slideId={slideId} />
-        <SlideFillOverlay slideId={slideId} />
-        <SelectionOverlay />
-      </div>
-    </ArtboardViewport>
+    <>
+      <ArtboardViewport onBackgroundPointerDown={clearSelection}>
+        <div
+          className="relative touch-none select-none"
+          style={{ width: ARTBOARD_WIDTH, height: ARTBOARD_HEIGHT }}
+          {...handlers}
+          onDoubleClick={onDoubleClick}
+        >
+          <SlideRenderer
+            slideId={slideId}
+            previewBoxes={previewBoxes}
+            hiddenId={active?.kind === "text" ? active.elementId : undefined}
+          />
+          {active?.kind === "text" && <TextEditor key={active.elementId} elementId={active.elementId} caret={active.caret} />}
+          {active?.kind === "cell" && (
+            <TableCellEditor key={`${active.elementId}:${active.row}:${active.col}`} editing={active} />
+          )}
+          <AiHighlightOverlay slideId={slideId} />
+          <SlideFillOverlay slideId={slideId} />
+          <SelectionOverlay />
+        </div>
+      </ArtboardViewport>
+      <CrossSlideGhost />
+    </>
   );
 }
 
