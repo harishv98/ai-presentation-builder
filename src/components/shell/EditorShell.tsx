@@ -1,6 +1,7 @@
 "use client";
 
 import { CanvasStage } from "@/components/canvas/CanvasStage";
+import { CANVAS_REGION_ID } from "@/components/canvas/SlideFillOverlay";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { Filmstrip } from "@/components/filmstrip/Filmstrip";
 import { FilmstripToolbar } from "@/components/filmstrip/FilmstripToolbar";
@@ -36,7 +37,7 @@ export function EditorShell() {
           <Filmstrip />
         </aside>
 
-        <main className="min-w-0 flex-1">
+        <main id={CANVAS_REGION_ID} tabIndex={-1} aria-label="Slide canvas" className="min-w-0 flex-1 focus:outline-none">
           <CanvasArea />
         </main>
 

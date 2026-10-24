@@ -10,6 +10,7 @@ import type { Box } from "@/lib/deck/schema";
 import { useDeckStore } from "@/lib/deck/store";
 import { useGenerationStore } from "@/lib/generation/store";
 
+export const CANVAS_REGION_ID = "canvas-region";
 const OVERLAY_Z = 9998;
 const TEXT_BARS = [100, 92, 84, 58];
 
@@ -34,6 +35,8 @@ export function SlideFillOverlay({ slideId }: { slideId: string }) {
     );
   }
 
+  // Content added by another route (manual edit, chat edit) means there is nothing left to retry here.
+  if (!empty) return null;
   const failed = fill.status === "failed";
   return (
     <Layer>
@@ -49,7 +52,11 @@ export function SlideFillOverlay({ slideId }: { slideId: string }) {
         <button
           type="button"
           disabled={running}
-          onClick={() => void fillSlide(slideId)}
+          onClick={() => {
+            // The overlay unmounts once the fill starts; park focus on the canvas region so it isn't lost.
+            document.getElementById(CANVAS_REGION_ID)?.focus({ preventScroll: true });
+            void fillSlide(slideId);
+          }}
           className="rounded-lg bg-accent px-6 py-3 font-medium text-white hover:opacity-90 disabled:opacity-40"
         >
           {failed ? "Retry" : "Fill with AI"}
