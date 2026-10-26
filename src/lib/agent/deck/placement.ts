@@ -5,7 +5,7 @@ const INK = "#0f172a";
 const BODY_TEXT = "#334155";
 
 const TITLE_BAND: Box = { x: 80, y: 60, w: 1440, h: 120 };
-const HERO_TITLE: Box = { x: 160, y: 300, w: 1280, h: 160 };
+const HERO_TITLE: Box = { x: 160, y: 220, w: 1280, h: 240 };
 const BODY_SLOTS: Box[] = [
   { x: 80, y: 220, w: 1440, h: 620 },
   { x: 840, y: 220, w: 680, h: 620 },
