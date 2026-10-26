@@ -16,6 +16,9 @@ const IDLE: Omit<GenerationState, "runId"> = { phase: "idle", nextTitle: null, o
 
 export const useGenerationStore = create<GenerationState>()(() => ({ runId: 0, ...IDLE }));
 
+/** A generation is running and its slide pool takes retries. */
+export const selectAcceptsFills = (s: GenerationState) => s.phase === "planning" || s.phase === "populating";
+
 const set = useGenerationStore.setState;
 
 export function startGeneration(): number {

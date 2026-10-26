@@ -3,12 +3,11 @@
 import type { ReactNode } from "react";
 import { arrangeBoxes, bodyElements, type ArrangeItem } from "@/lib/agent/deck/arrange";
 import { fillSlide } from "@/lib/agent/flows/generateDeck";
-import { clip } from "@/lib/agent/deck/snapshot";
 import type { PlannedSlide } from "@/lib/agent/tools/planTool";
 import { selectRunning, useChatStore } from "@/lib/chat/store";
 import type { Box } from "@/lib/deck/schema";
 import { useDeckStore } from "@/lib/deck/store";
-import { useGenerationStore } from "@/lib/generation/store";
+import { selectAcceptsFills, useGenerationStore } from "@/lib/generation/store";
 
 export const CANVAS_REGION_ID = "canvas-region";
 const OVERLAY_Z = 9998;
@@ -19,6 +18,7 @@ export function SlideFillOverlay({ slideId }: { slideId: string }) {
   const planned = useGenerationStore((s) => s.outline[slideId]);
   const empty = useDeckStore((s) => bodyElements(s.deck, slideId).length === 0);
   const running = useChatStore(selectRunning);
+  const acceptsFills = useGenerationStore(selectAcceptsFills);
   if (!fill || !planned || fill.status === "done") return null;
 
   if (fill.status === "pending" || fill.status === "filling") {
@@ -47,11 +47,11 @@ export function SlideFillOverlay({ slideId }: { slideId: string }) {
       >
         <div className="min-w-0 flex-1">
           <p className="font-medium text-zinc-800">{failed ? "Couldn't fill this slide" : "This slide wasn't filled"}</p>
-          {failed && fill.error && <p className="truncate text-zinc-500">{clip(fill.error, 140)}</p>}
+          {failed && fill.error && <p className="line-clamp-3 break-words text-zinc-500" title={fill.error}>{fill.error}</p>}
         </div>
         <button
           type="button"
-          disabled={running}
+          disabled={running && !acceptsFills}
           onClick={() => {
             // The overlay unmounts once the fill starts; park focus on the canvas region so it isn't lost.
             document.getElementById(CANVAS_REGION_ID)?.focus({ preventScroll: true });

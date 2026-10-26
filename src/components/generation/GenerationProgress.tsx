@@ -3,7 +3,7 @@
 import { fillSlide } from "@/lib/agent/flows/generateDeck";
 import { selectRunning, useChatStore } from "@/lib/chat/store";
 import { useDeckStore } from "@/lib/deck/store";
-import { useGenerationStore, type FillStatus } from "@/lib/generation/store";
+import { selectAcceptsFills, useGenerationStore, type FillStatus } from "@/lib/generation/store";
 
 const STATUS: Record<FillStatus, { glyph: string; className: string; label: string }> = {
   pending: { glyph: "○", className: "text-zinc-300", label: "Queued" },
@@ -21,6 +21,7 @@ export function GenerationProgress({ runId }: { runId: number }) {
   const slideOrder = useDeckStore((s) => s.deck.slideOrder);
   const slides = useDeckStore((s) => s.deck.slides);
   const running = useChatStore(selectRunning);
+  const acceptsFills = useGenerationStore(selectAcceptsFills);
 
   if (!current) return <p className="text-xs text-zinc-400">Generated an earlier deck.</p>;
 
@@ -48,26 +49,29 @@ export function GenerationProgress({ runId }: { runId: number }) {
           const status = STATUS[fill.status];
           const action = fill.status === "failed" ? "Retry" : fill.status === "stopped" ? "Fill" : null;
           return (
-            <li key={id} tabIndex={-1} className="flex items-baseline gap-2 focus:outline-none">
-              <span aria-hidden className={`w-3 shrink-0 ${status.className}`}>{status.glyph}</span>
-              <span className="min-w-0 flex-1 truncate text-zinc-700" title={fill.error}>
-                {slideOrder.indexOf(id) + 1}. {slides[id]?.title}
-              </span>
-              {status.label ? <span className="text-zinc-400">{status.label}</span> : fill.status === "done" && <span className="sr-only">Done</span>}
-              {action && (
-                <button
-                  type="button"
-                  disabled={running}
-                  onClick={(event) => {
-                    // The button unmounts when the fill starts; keep focus on its (persistent) row instead.
-                    event.currentTarget.closest("li")?.focus({ preventScroll: true });
-                    void fillSlide(id);
-                  }}
-                  className="font-medium text-accent underline disabled:opacity-40"
-                >
-                  {action}
-                </button>
-              )}
+            <li key={id} tabIndex={-1} className="flex flex-col focus:outline-none">
+              <div className="flex items-baseline gap-2">
+                <span aria-hidden className={`w-3 shrink-0 ${status.className}`}>{status.glyph}</span>
+                <span className="min-w-0 flex-1 truncate text-zinc-700">
+                  {slideOrder.indexOf(id) + 1}. {slides[id]?.title}
+                </span>
+                {status.label ? <span className="text-zinc-400">{status.label}</span> : fill.status === "done" && <span className="sr-only">Done</span>}
+                {action && (
+                  <button
+                    type="button"
+                    disabled={running && !acceptsFills}
+                    onClick={(event) => {
+                      // The button unmounts when the fill starts; keep focus on its (persistent) row instead.
+                      event.currentTarget.closest("li")?.focus({ preventScroll: true });
+                      void fillSlide(id);
+                    }}
+                    className="font-medium text-accent underline disabled:opacity-40"
+                  >
+                    {action}
+                  </button>
+                )}
+              </div>
+              {fill.status === "failed" && fill.error && <p className="pl-5 break-words text-amber-700">{fill.error}</p>}
             </li>
           );
         })}
