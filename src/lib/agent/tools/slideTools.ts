@@ -44,7 +44,7 @@ const addSlide = defineTool({
 const updateSlide = defineTool({
   name: "update_slide",
   description:
-    "Change slide metadata: title (shown in the slide list, not on the slide), speaker notes, background color. To change the visible heading, update the title text element.",
+    "Change slide metadata: title (shown in the slide list, not on the slide), speaker notes, background color. To change the visible heading, update the title text element. Use change_layout for layout.",
   args: z.object({
     slideId: SlideIdArg,
     title: z.string().min(1).max(120).optional(),
@@ -53,7 +53,7 @@ const updateSlide = defineTool({
   }),
   run({ slideId, backgroundColor, ...rest }, ctx) {
     const patch = { ...rest, ...(backgroundColor && { background: { color: backgroundColor } }) };
-    if (Object.keys(patch).length === 0) return fail("Pass at least one of title, notes, backgroundColor");
+    if (Object.keys(patch).length === 0) return fail("Pass at least one of title, notes, backgroundColor. Use change_layout to change the layout");
     const result = applyOne(ctx, { op: "update_slide", id: slideId, patch });
     return result.ok ? done(`Updated ${slideLabel(ctx.deck(), slideId)}`, [slideId]) : fail(result.error);
   },

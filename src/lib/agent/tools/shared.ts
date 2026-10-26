@@ -15,18 +15,19 @@ export type AgentTool = {
   execute: (rawArgs: unknown, ctx: ToolContext) => ToolOutcome;
 };
 
-export function defineTool<S extends z.ZodType>(spec: {
+export function defineTool<S extends z.ZodObject>(spec: {
   name: string;
   description: string;
   args: S;
   run: (args: z.infer<S>, ctx: ToolContext) => ToolOutcome;
 }): AgentTool {
+  const args = spec.args.strict() as S;
   return {
     name: spec.name,
     description: spec.description,
-    args: spec.args,
+    args,
     execute(rawArgs, ctx) {
-      const parsed = spec.args.safeParse(rawArgs);
+      const parsed = args.safeParse(rawArgs);
       if (!parsed.success) return fail(`Invalid arguments:\n${z.prettifyError(parsed.error)}`);
       return spec.run(parsed.data, ctx);
     },

@@ -26,6 +26,12 @@ describe("executeToolCall", () => {
     expect(run(call("add_slide", "{oops")).summary).toBe("Arguments are not valid JSON");
   });
 
+  it("rejects arguments the tool does not define instead of dropping them", () => {
+    const result = run(call("update_slide", { slideId: "s1", layout: "content" }));
+    expect(result.ok).toBe(false);
+    expect(result.summary).toContain("layout");
+  });
+
   it("keeps populate on its own slide and away from what the user is editing", () => {
     expect(run(addText("s2"), { mode: "populate", slideId: "s1" }).summary).toBe("Only slide s1 can be changed now");
     useUiStore.setState({ editing: { kind: "text", elementId: "e9", caret: "all" } });
