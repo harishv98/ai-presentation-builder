@@ -1,4 +1,4 @@
-import type { ChatErrorBody, ChatRequest } from "./protocol";
+import type { ChatErrorBody, ChatRequest } from "../protocol";
 import { createTurnAccumulator, readSseEvents, type TurnEvents } from "./sse";
 
 export class AgentRequestError extends Error {

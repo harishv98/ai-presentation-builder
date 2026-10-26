@@ -19,9 +19,11 @@ import type { Op } from "@/lib/deck/ops";
 import type { Box } from "@/lib/deck/schema";
 import { useDeckStore } from "@/lib/deck/store";
 import { selectionOnSlide, useUiStore } from "@/lib/ui/store";
+import { THUMBNAIL_WIDTH } from "@/components/filmstrip/constants";
 
 const DRAG_THRESHOLD_PX = 3;
 const SNAP_THRESHOLD_PX = 6;
+const CROSS_DRAG_SCALE = THUMBNAIL_WIDTH / ARTBOARD_WIDTH;
 
 type GestureBase = { pointerId: number; scale: number; origin: Point; targets: Box[] };
 
@@ -156,13 +158,14 @@ export function useCanvasGesture(slideId: string) {
         const rect = event.currentTarget.getBoundingClientRect();
         const { clientX: x, clientY: y } = event;
         if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+          const crossDragScale = Math.min(g.scale, CROSS_DRAG_SCALE);
           ui.setDragPreview(null);
           ui.setCrossDrag({
             ids: g.ids,
             group: g.group,
-            scale: g.scale,
-            left: x - (g.origin.x - g.group.x) * g.scale,
-            top: y - (g.origin.y - g.group.y) * g.scale,
+            scale: crossDragScale,
+            left: x - (g.origin.x - g.group.x) * crossDragScale,
+            top: y - (g.origin.y - g.group.y) * crossDragScale,
             targetSlideId: dropSlideAt(x, y, slideId),
             copy: event.altKey,
           });

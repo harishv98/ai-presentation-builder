@@ -1,9 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { arrangeBoxes, bodyElements, type ArrangeItem } from "@/lib/agent/arrange";
-import { fillSlide } from "@/lib/agent/generateDeck";
-import { clip } from "@/lib/agent/snapshot";
+import { arrangeBoxes, bodyElements, type ArrangeItem } from "@/lib/agent/deck/arrange";
+import { fillSlide } from "@/lib/agent/flows/generateDeck";
+import { clip } from "@/lib/agent/deck/snapshot";
 import type { PlannedSlide } from "@/lib/agent/tools/planTool";
 import { selectRunning, useChatStore } from "@/lib/chat/store";
 import type { Box } from "@/lib/deck/schema";

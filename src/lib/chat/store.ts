@@ -63,3 +63,13 @@ export const selectRunning = (s: ChatState) => s.abort !== null;
 export function pushNotice(tone: "info" | "error", text: string, retryPrompt?: string): void {
   useChatStore.getState().pushItem({ kind: "notice", tone, text, ...(retryPrompt && { retryPrompt }) });
 }
+
+/** Returns a writer that appends to one assistant message, adding it on the first delta. */
+export function assistantTextWriter(): (delta: string) => void {
+  let itemId: string | null = null;
+  return (delta) => {
+    const chat = useChatStore.getState();
+    itemId ??= chat.pushItem({ kind: "assistant", text: "" });
+    chat.appendText(itemId, delta);
+  };
+}

@@ -32,7 +32,7 @@ export async function POST(request: Request): Promise<Response> {
     upstream = await callSarvam(buildCompletionBody(parsed.data), apiKey, request.signal);
   } catch (error) {
     if (request.signal.aborted) return new Response(null, { status: 499 });
-    return errorResponse(502, { code: "upstream", error: `Could not reach Sarvam: ${networkCause(error)}` });
+    return errorResponse(502, { code: "upstream", error: `Could not reach Sarvam: ${error instanceof Error ? error.message : String(error)}` });
   }
   if (!upstream.ok || !upstream.body) {
     const detail = (await upstream.text()).slice(0, 500);
@@ -52,10 +52,4 @@ function errorResponse(status: number, body: ChatErrorBody, headers?: HeadersIni
 
 function tooLarge(): Response {
   return errorResponse(413, { code: "too_large", error: `Request is larger than ${MAX_BODY_BYTES / 1000} KB` });
-}
-
-function networkCause(error: unknown): string {
-  const code = error instanceof Error ? (error.cause as { code?: string } | undefined)?.code : undefined;
-  if (code === "UNABLE_TO_GET_ISSUER_CERT_LOCALLY") return `${code} (start the dev server with NODE_USE_SYSTEM_CA=1)`;
-  return code ?? (error instanceof Error ? error.message : String(error));
 }

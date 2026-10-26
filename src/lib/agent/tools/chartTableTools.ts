@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ChartKindSchema } from "@/lib/deck/schema";
-import { placeBox } from "../placement";
+import { placeBox } from "../deck/placement";
 import { applyCreate, applyOne, BoxArg, defineTool, done, ElementIdArg, fail, findElement, slideLabel, SlideIdArg } from "./shared";
 
 const SeriesArg = z

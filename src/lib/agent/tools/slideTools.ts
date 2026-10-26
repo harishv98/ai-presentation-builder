@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { SlideLayoutSchema } from "@/lib/deck/schema";
-import { titleElement } from "../placement";
+import { titleElement } from "../deck/placement";
 import { applyCreate, applyOne, defineTool, done, fail, slideLabel, SlideIdArg } from "./shared";
 
 const addSlide = defineTool({

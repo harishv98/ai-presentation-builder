@@ -1,4 +1,4 @@
-import { textStyle } from "@/lib/agent/placement";
+import { textStyle } from "@/lib/agent/deck/placement";
 import { translateBox } from "@/lib/canvas/geometry";
 import { ARTBOARD_HEIGHT, ARTBOARD_WIDTH } from "@/lib/deck/constants";
 import type { NewElement } from "@/lib/deck/ops";

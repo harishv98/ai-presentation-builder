@@ -3,7 +3,7 @@ import { recordTxn, redoTxn, undoTxn, type Txn, type TxnMeta } from "./history";
 import { applyOpsToDeck, type Op, type OpResult } from "./ops";
 import type { Deck } from "./schema";
 
-function createEmptyDeck(): Deck {
+export function createEmptyDeck(): Deck {
   return {
     id: "deck-1",
     title: "Untitled deck",

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { GenerationProgress } from "@/components/generation/GenerationProgress";
-import { sendPrompt } from "@/lib/agent/sendPrompt";
+import { sendPrompt } from "@/lib/agent/flows/sendPrompt";
 import { selectRunning, useChatStore, type ChatItem } from "@/lib/chat/store";
 import { useDeckStore } from "@/lib/deck/store";
 import { useUiStore } from "@/lib/ui/store";

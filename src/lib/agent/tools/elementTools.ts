@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { ElementPatch, NewElement } from "@/lib/deck/ops";
 import { ImagePayloadSchema, ShapePayloadSchema, TextPayloadSchema, type Deck, type ElementType } from "@/lib/deck/schema";
-import { placeBox, stockImageUrl, textStyle } from "../placement";
+import { placeBox, stockImageUrl, textStyle } from "../deck/placement";
 import {
   applyCreate,
   applyOne,

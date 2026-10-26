@@ -1,7 +1,7 @@
 "use client";
 
 import { Tooltip } from "@/components/ui/Tooltip";
-import { bodyElements } from "@/lib/agent/arrange";
+import { bodyElements } from "@/lib/agent/deck/arrange";
 import { useDeckStore } from "@/lib/deck/store";
 import { useGenerationStore } from "@/lib/generation/store";
 

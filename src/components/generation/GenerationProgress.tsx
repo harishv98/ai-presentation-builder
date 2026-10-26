@@ -1,6 +1,6 @@
 "use client";
 
-import { fillSlide } from "@/lib/agent/generateDeck";
+import { fillSlide } from "@/lib/agent/flows/generateDeck";
 import { selectRunning, useChatStore } from "@/lib/chat/store";
 import { useDeckStore } from "@/lib/deck/store";
 import { useGenerationStore, type FillStatus } from "@/lib/generation/store";

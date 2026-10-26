@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/Button";
 import { MAX_PROMPT_CHARS } from "@/lib/agent/protocol";
-import { stopAgent } from "@/lib/agent/runAgent";
-import { sendPrompt } from "@/lib/agent/sendPrompt";
+import { stopAgent } from "@/lib/agent/flows/runAgent";
+import { sendPrompt } from "@/lib/agent/flows/sendPrompt";
 import { selectRunning, useChatStore } from "@/lib/chat/store";
 import { useDeckStore } from "@/lib/deck/store";
 

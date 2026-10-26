@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { generateDeck } from "@/lib/agent/generateDeck";
+import { generateDeck } from "@/lib/agent/flows/generateDeck";
 import { MAX_PROMPT_CHARS } from "@/lib/agent/protocol";
 import { selectAwaitingPlanAnswer, selectRunning, useChatStore } from "@/lib/chat/store";
 import { addBlankSlide } from "@/lib/slides/actions";

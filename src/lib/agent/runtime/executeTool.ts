@@ -2,11 +2,14 @@ import type { Op } from "@/lib/deck/ops";
 import type { Deck } from "@/lib/deck/schema";
 import { useDeckStore } from "@/lib/deck/store";
 import { useUiStore } from "@/lib/ui/store";
-import type { AgentMode, ToolCall } from "./protocol";
-import { describeElement } from "./snapshot";
-import { findTool, type ToolContext } from "./tools";
+import { arrangeSlide } from "../deck/arrange";
+import type { AgentMode, ToolCall } from "../protocol";
+import { describeElement } from "../deck/snapshot";
+import { findTool, type ToolContext } from "../tools";
 
-export type ToolScope = { txnId: string; label: string; mode?: AgentMode; slideId?: string };
+/** Every change made with the same txnId undoes as one step. */
+export type UndoGroup = { txnId: string; label: string };
+export type ToolScope = UndoGroup & { mode?: AgentMode; slideId?: string };
 
 export type ToolExecution = {
   callId: string;
@@ -67,11 +70,23 @@ export function executeToolCall(call: ToolCall, scope: ToolScope): ToolExecution
   }
 }
 
-export function aiToolContext(txn: { txnId: string; label: string }): ToolContext {
+export function aiToolContext(group: UndoGroup): ToolContext {
   return {
     deck: () => useDeckStore.getState().deck,
-    apply: (ops: Op[]) => useDeckStore.getState().applyOps(ops, { source: "ai", label: txn.label, txnId: txn.txnId }),
+    apply: (ops: Op[]) => useDeckStore.getState().applyOps(ops, { source: "ai", label: group.label, txnId: group.txnId }),
   };
+}
+
+/** Lays out the slide's body elements and returns the ids that moved. */
+export function autoArrange(slideId: string, undoGroup: UndoGroup): string[] {
+  const { deck, applyOps } = useDeckStore.getState();
+  const ops = arrangeSlide(deck, slideId);
+  if (ops.length > 0) applyOps(ops, { source: "ai", ...undoGroup });
+  return ops.flatMap((op) => (op.op === "update_element" ? [op.id] : []));
+}
+
+export function newUndoGroup(label: string): UndoGroup {
+  return { txnId: crypto.randomUUID(), label };
 }
 
 function failed(base: { callId: string; name: string }, error: string): ToolExecution {
