@@ -46,7 +46,7 @@ The steps, in the order a user meets them:
 
 1. **The app starts.** `page.tsx` loads the [app shell](architecture/app-shell.md) on the client only. It lays out the header, filmstrip, canvas, and right panel, and installs global shortcuts.
 2. **The saved deck is restored.** [Persistence](architecture/persistence.md) loads the deck from IndexedDB and validates it before the editor renders, then starts autosaving.
-3. **The user types a prompt.** [Chat](architecture/chat.md) takes the prompt and `sendPrompt` routes it: an empty deck goes to generation, anything else to the edit agent. Only one AI turn runs at a time, and Stop aborts it.
+3. **The user types a prompt.** [Chat](architecture/chat.md) takes the prompt and `sendPrompt` routes it: an empty deck goes to generation, anything else to the edit agent. Only one AI turn runs at a time (slide retries during generation join the running one), and Stop aborts it.
 4. **Something changes the deck.** One of three paths:
    - a. [Deck generation](architecture/deck-generation.md) plans an outline (slides appear as it streams), then fills each slide in parallel, two at a time.
    - b. The [edit agent](architecture/edit-agent.md) runs a reply of up to 12 tool-calling steps, seeing a fresh snapshot of the deck on each step.

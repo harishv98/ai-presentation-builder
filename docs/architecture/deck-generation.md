@@ -74,8 +74,8 @@ sequenceDiagram
 
 ## Populate step (`populateSlide`)
 
-- **Starts early for title slides.** When the first slide arrives and its layout is `title`, its populate call starts immediately while the rest of the outline is still streaming.
-- **Concurrency.** The remaining slides go through `runPool` with two workers. Workers stop taking new slides once the signal aborts.
+- **One pool per run.** Every populate call goes through the run's fill pool (`createPool`), which runs at most two at a time and accepts slides while it runs. Workers stop taking new slides once the signal aborts, and the run ends only after the pool drains.
+- **Starts early for title slides.** When the first slide arrives and its layout is `title`, it joins the pool immediately while the rest of the outline is still streaming. The remaining slides join once the outline is done.
 - **Mode `populate`**: six content tools (`add_element`, `update_element`, `add_chart`, `update_chart_data`, `add_table`, `update_table`), with `tool_choice: "required"` on the server. The snapshot (`serializeForPopulate`) lists every slide with its outline intent, marks the target slide, and lists the target's elements.
 - **Scope.** Every call runs with `{ mode: "populate", slideId }`, so `executeToolCall` rejects anything aimed at another slide.
 - **Loop**, at most 3 steps:
@@ -88,7 +88,12 @@ sequenceDiagram
 
 The plan and every populate call share one undo group labelled `AI: <prompt>`, so a single ⌘Z removes the generated deck (as long as the user hasn't made an edit in between; see [undo grouping](deck-model.md#undo-history)).
 
-`fillSlide(slideId)` re-runs populate for one slide with its own undo group. It is what the **Retry** and **Fill** buttons call. It needs the slide's outline entry in the generation store, so it only works for slides from the current generation run.
+`fillSlide(slideId)` re-runs populate for one slide. It is what the **Retry** and **Fill** buttons call. It needs the slide's outline entry in the generation store, so it only works for slides from the current generation run.
+
+- **While the run is still going** (`selectAcceptsFills`: phase `planning` or `populating`), the slide is marked `pending` and joins the run's pool. It shares the run's abort signal, undo group, and two-at-a-time limit, so Stop cancels it, one ⌘Z still removes the whole deck, and the run's turn stays open until it finishes.
+- **After the run**, it starts its own turn with its own undo group, and is blocked while another AI turn is running.
+
+A failed slide's reason shows under its row in the progress card and on the canvas card. The final reply names the reason when every failed slide failed the same way.
 
 ## Generation store
 

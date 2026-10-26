@@ -30,7 +30,7 @@ Step 3 of the [end-to-end flow](../ARCHITECTURE.md#1-end-to-end-flow). `sendProm
 | `abort` | The `AbortController` of the running turn. Non-null means a turn is running (`selectRunning`). |
 | `draft` | The composer text. |
 
-**Turn lifecycle.** Every flow calls `beginTurn(abort)` first and `endTurn(exchange, changes)` in a `finally`. `beginTurn` is the lock: every entry point returns early if `abort` is already set, so only one AI turn runs at a time. `endTurn` clears the lock and appends the turn to `history` and `recentChanges`.
+**Turn lifecycle.** Every flow calls `beginTurn(abort)` first and `endTurn(exchange, changes)` in a `finally`. `beginTurn` is the lock: every entry point returns early if `abort` is already set, so only one AI turn runs at a time. The one exception is a slide retry during generation, which joins the running generation instead of starting a turn (see [undo and retries](deck-generation.md#undo-and-retries)). `endTurn` clears the lock and appends the turn to `history` and `recentChanges`.
 
 **Streaming text.** `assistantTextWriter()` returns a function that creates an assistant item on the first text delta and appends to it afterwards. The [tool loop](agent-runtime.md#tool-loop) asks for a new writer at the start of each step, so each step's text becomes its own message.
 
